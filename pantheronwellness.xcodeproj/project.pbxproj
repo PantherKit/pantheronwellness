@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		F95F12772EC6581400DAF6CB /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = F95F12762EC6581400DAF6CB /* RiveRuntime */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		F95F12672EC64EEE00DAF6CB /* pantheronwellness.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pantheronwellness.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F95F12772EC6581400DAF6CB /* RiveRuntime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = pantheronwellness;
 			packageProductDependencies = (
+				F95F12762EC6581400DAF6CB /* RiveRuntime */,
 			);
 			productName = pantheronwellness;
 			productReference = F95F12672EC64EEE00DAF6CB /* pantheronwellness.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = F95F125E2EC64EEE00DAF6CB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F95F12752EC6581400DAF6CB /* XCRemoteSwiftPackageReference "rive-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F95F12682EC64EEE00DAF6CB /* Products */;
 			projectDirPath = "";
@@ -351,6 +360,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F95F12752EC6581400DAF6CB /* XCRemoteSwiftPackageReference "rive-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/rive-app/rive-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.12.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F95F12762EC6581400DAF6CB /* RiveRuntime */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95F12752EC6581400DAF6CB /* XCRemoteSwiftPackageReference "rive-ios" */;
+			productName = RiveRuntime;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F95F125F2EC64EEE00DAF6CB /* Project object */;
 }
