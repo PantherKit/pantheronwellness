@@ -36,13 +36,13 @@ struct AssessmentQuestionPage: View {
                         // Progress Bar
                         VStack(spacing: 8) {
                             HStack {
-                                Text("Pregunta \(questionIndex + 1) de \(AssessmentQuestion.allQuestions.count)")
+                                Text(progressText)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 
                                 Spacer()
                                 
-                                Text("\(Int((Double(questionIndex + 1) / Double(AssessmentQuestion.allQuestions.count)) * 100))%")
+                                Text(progressPercentageText)
                                     .font(.caption)
                                     .fontWeight(.medium)
                                     .foregroundColor(question.dimension.primaryColor)
@@ -66,7 +66,7 @@ struct AssessmentQuestionPage: View {
                                             )
                                         )
                                         .frame(
-                                            width: geo.size.width * (Double(questionIndex + 1) / Double(AssessmentQuestion.allQuestions.count)),
+                                            width: geo.size.width * progressPercentage,
                                             height: 6
                                         )
                                         .animation(.easeInOut(duration: 0.5), value: questionIndex)
@@ -173,7 +173,7 @@ struct AssessmentQuestionPage: View {
             // Swipe to go back (only if not first question)
             DragGesture()
                 .onEnded { gesture in
-                    if gesture.translation.x > 100 && questionIndex > 0 {
+                    if gesture.translation.width > 100 && questionIndex > 0 {
                         // Go back to previous question
                         coordinator.currentQuestionIndex = questionIndex - 1
                         coordinator.currentView = .assessmentQuestion(questionIndex - 1)
@@ -183,6 +183,18 @@ struct AssessmentQuestionPage: View {
     }
     
     // MARK: - Computed Properties
+    private var progressText: String {
+        "Pregunta \(questionIndex + 1) de \(AssessmentQuestion.allQuestions.count)"
+    }
+    
+    private var progressPercentageText: String {
+        "\(Int(progressPercentage * 100))%"
+    }
+    
+    private var progressPercentage: Double {
+        Double(questionIndex + 1) / Double(AssessmentQuestion.allQuestions.count)
+    }
+    
     private var buttonBackground: some View {
         Group {
             if hasAnswered {
