@@ -143,7 +143,7 @@ struct WelcomeScreen: View {
                 } else if !showHowItWorks {
                     // How It Works Carousel (NUEVO)
                     howItWorksCarousel(geometry: geometry)
-                } else if !showNameInput {
+                } else if showHowItWorks && !showNameInput {
                     // Name Input Section
                     nameInputSection(geometry: geometry)
                 } else if !showExplanation {
@@ -296,8 +296,10 @@ struct WelcomeScreen: View {
     
     private func continueToNameInput() {
         // Transición al name input
+        // Solo marcamos showHowItWorks = true
+        // La condición showHowItWorks && !showNameInput mostrará el Name Input
         withAnimation(.easeInOut(duration: 0.6)) {
-            showNameInput = true
+            showHowItWorks = true
         }
     }
     
@@ -312,7 +314,8 @@ struct WelcomeScreen: View {
         
         // Continuar a explanation
         withAnimation(.easeInOut(duration: 0.6)) {
-            showExplanation = true
+            showNameInput = true  // Marcar name input como completado
+            showExplanation = false  // Mostrar explanation
         }
         
         // Expandir panel para el grid
@@ -451,153 +454,52 @@ struct WelcomeScreen: View {
         }
     }
     
-    // MARK: - How It Works Carousel
+    // MARK: - How It Works Carousel (con Lottie Fijo)
     private func howItWorksCarousel(geometry: GeometryProxy) -> some View {
         VStack(spacing: 0) {
-            TabView(selection: $howItWorksPage) {
-                // Page 1: La Solución (Wellness 2.0)
-                howItWorksPage1()
-                    .tag(0)
-                
-                // Page 2: Cómo Funciona
-                howItWorksPage2(geometry: geometry)
-                    .tag(1)
-            }
-            .tabViewStyle(.page(indexDisplayMode: .always))
-            .indexViewStyle(.page(backgroundDisplayMode: .always))
-        }
-    }
-    
-    private func howItWorksPage1() -> some View {
-        VStack(spacing: 32) {
-            // Lottie Icon - Sunrise Animation
+            // Lottie FIJO en la parte superior
             LottieView(animation: .named("sunriseAnimation"))
                 .playing(loopMode: .loop)
                 .animationSpeed(0.8)
-                .frame(width: 120, height: 120)
+                .frame(width: 340, height: 250)
                 .scaleEffect(showOnboardingContent ? 1 : 0.5)
                 .animation(
                     .spring(response: 1.0, dampingFraction: 0.6),
                     value: showOnboardingContent
                 )
             
-            // Content
-            VStack(spacing: 20) {
-                Text("Wellty te ayuda a instalar\nel software de una nueva\nidentidad.\n\nCada pequeña acción cuenta.\nCada día construyes quién eres.")
-                    .font(.manrope(18, weight: .regular))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(6)
-                    .opacity(showOnboardingContent ? 1 : 0)
-                    .offset(y: showOnboardingContent ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.8).delay(0.2),
-                        value: showOnboardingContent
-                    )
-            }
-        }
-    }
-    
-    private func howItWorksPage2(geometry: GeometryProxy) -> some View {
-        VStack(spacing: 32) {
-            // Icon
+            Spacer().frame(height: 12)
+            
+            // Contenido dinámico con fade in/out
             ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                Color(hex: 0xB6E2D3).opacity(0.3),
-                                Color(hex: 0x1A5A53).opacity(0.1)
-                            ]),
-                            center: .center,
-                            startRadius: 30,
-                            endRadius: 60
-                        )
-                    )
-                    .frame(width: 100, height: 100)
-                
-                Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.system(size: 40, weight: .light))
-                    .foregroundColor(Color(hex: 0x1A5A53))
-            }
-            .scaleEffect(showOnboardingContent ? 1 : 0.5)
-            .animation(
-                .spring(response: 1.0, dampingFraction: 0.6),
-                value: showOnboardingContent
-            )
-            
-            // Content
-            VStack(spacing: 20) {
-                Text("El ciclo de\nidentidad")
-                    .font(.manrope(32, weight: .bold))
-                    .foregroundColor(theme.colors.welcomeTextPrimary)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(2)
-                    .opacity(showOnboardingContent ? 1 : 0)
-                    .offset(y: showOnboardingContent ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.8).delay(0.2),
-                        value: showOnboardingContent
-                    )
-                
-                VStack(spacing: 12) {
-                    Text("1. Eliges quién quieres ser")
-                        .font(.manrope(16, weight: .semibold))
-                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
-                    
-                    Text("↓")
-                        .font(.system(size: 20))
-                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
-                    
-                    Text("2. Completas 1 micro-acción")
-                        .font(.manrope(16, weight: .semibold))
-                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
-                    
-                    Text("↓")
-                        .font(.system(size: 20))
-                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
-                    
-                    Text("3. Creas evidencia")
-                        .font(.manrope(16, weight: .semibold))
-                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
-                    
-                    Text("↓")
-                        .font(.system(size: 20))
-                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
-                    
-                    Text("4. Refuerzas tu identidad")
-                        .font(.manrope(16, weight: .semibold))
-                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+                if howItWorksPage == 0 {
+                    howItWorksContent1()
+                        .transition(.opacity)
+                } else {
+                    howItWorksContent2()
+                        .transition(.opacity)
                 }
-                .opacity(showOnboardingContent ? 1 : 0)
-                .offset(y: showOnboardingContent ? 0 : 15)
-                .animation(
-                    .easeOut(duration: 0.8).delay(0.4),
-                    value: showOnboardingContent
-                )
-                
-                Text("2 minutos al día.\n7 dimensiones del wellness.\nUna identidad a la vez.")
-                    .font(.manrope(14, weight: .regular))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                    .padding(.top, 8)
-                    .opacity(showOnboardingContent ? 1 : 0)
-                    .animation(
-                        .easeOut(duration: 0.8).delay(0.6),
-                        value: showOnboardingContent
-                    )
             }
+            .animation(.easeInOut(duration: 0.4), value: howItWorksPage)
             
-            Spacer(minLength: 20)
+            Spacer().frame(height: 24)
             
-            // CTA Button
+            // Botón Siguiente / Comenzar
             Button(action: {
                 let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
                 impactFeedback.impactOccurred()
-                continueToNameInput()
+                
+                if howItWorksPage == 0 {
+                    // Ir a página 2
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        howItWorksPage = 1
+                    }
+                } else {
+                    // Ir a name input
+                    continueToNameInput()
+                }
             }) {
-                Text("Comenzar mi journey →")
+                Text(howItWorksPage == 0 ? "Siguiente" : "Comenzar mi journey →")
                     .font(.manrope(16, weight: .semibold))
                     .foregroundColor(.white)
                     .padding(.horizontal, 32)
@@ -613,14 +515,95 @@ struct WelcomeScreen: View {
                     )
             }
             .buttonStyle(PlainButtonStyle())
-            .frame(width: geometry.size.width * 0.75)
+            .frame(width: geometry.size.width * 0.65)
             .opacity(showOnboardingContent ? 1 : 0)
             .scaleEffect(showOnboardingContent ? 1.0 : 0.9)
             .animation(
                 .spring(response: 0.7, dampingFraction: 0.75).delay(0.8),
                 value: showOnboardingContent
             )
+            
+            Spacer().frame(height: 20)
+            
+            // Indicador de página (dots)
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(howItWorksPage == 0 ? theme.colors.welcomeTextPrimary : theme.colors.welcomeTextPrimary.opacity(0.3))
+                    .frame(width: 8, height: 8)
+                Circle()
+                    .fill(howItWorksPage == 1 ? theme.colors.welcomeTextPrimary : theme.colors.welcomeTextPrimary.opacity(0.3))
+                    .frame(width: 8, height: 8)
+            }
+            .opacity(showOnboardingContent ? 1 : 0)
+            .animation(.easeOut(duration: 0.6).delay(1.0), value: showOnboardingContent)
         }
+    }
+    
+    // Contenido de la página 1
+    private func howItWorksContent1() -> some View {
+        VStack(spacing: 16) {
+            Text("Wellty te ayuda a instalar\nel software de una nueva\nidentidad.")
+                .font(.manrope(24, weight: .bold))
+                .foregroundColor(theme.colors.welcomeTextPrimary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(6)
+            
+            Text("Cada pequeña acción cuenta.\nCada día construyes quién eres.")
+                .font(.manrope(18, weight: .regular))
+                .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.8))
+                .multilineTextAlignment(.center)
+                .lineSpacing(6)
+        }
+        .padding(.horizontal, 24)
+    }
+    
+    // Contenido de la página 2
+    private func howItWorksContent2() -> some View {
+        VStack(spacing: 20) {
+            Text("El ciclo de\nidentidad")
+                .font(.manrope(24, weight: .bold))
+                .foregroundColor(theme.colors.welcomeTextPrimary)
+                .multilineTextAlignment(.center)
+                .lineSpacing(2)
+            
+            VStack(spacing: 12) {
+                Text("1. Eliges quién quieres ser")
+                    .font(.manrope(16, weight: .semibold))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+                
+                Text("↓")
+                    .font(.system(size: 20))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
+                
+                Text("2. Completas 1 micro-acción")
+                    .font(.manrope(16, weight: .semibold))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+                
+                Text("↓")
+                    .font(.system(size: 20))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
+                
+                Text("3. Creas evidencia")
+                    .font(.manrope(16, weight: .semibold))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+                
+                Text("↓")
+                    .font(.system(size: 20))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
+                
+                Text("4. Refuerzas tu identidad")
+                    .font(.manrope(16, weight: .semibold))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+            }
+            
+            Text("2 minutos al día.\n7 dimensiones del wellness.\nUna identidad a la vez.")
+                .font(.manrope(14, weight: .regular))
+                .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.top, 8)
+        }
+        .padding(.horizontal, 24)
     }
     
     // MARK: - Explanation Section
