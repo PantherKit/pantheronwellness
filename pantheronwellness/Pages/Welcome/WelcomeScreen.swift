@@ -6,6 +6,7 @@ struct WelcomeScreen: View {
     @State private var showContent = false
     @State private var animationLoaded = false
     @State private var isButtonPressed = false
+    @State private var wavePhase: Double = 0
     @Environment(\.appTheme) var theme
     
     var body: some View {
@@ -15,7 +16,7 @@ struct WelcomeScreen: View {
                 VStack {
                     Spacer()
                     
-                    heroAnimationSection
+                    heroAnimationSection(geometry: geometry)
                         .frame(height: geometry.size.height * 0.55)
                     
                     Spacer()
@@ -40,17 +41,39 @@ struct WelcomeScreen: View {
             withAnimation(.easeOut(duration: 0.8)) {
                 showContent = true
             }
+            
+            // Iniciar animación continua de olas (más lenta y relajante)
+            withAnimation(
+                .linear(duration: 6.0)
+                .repeatForever(autoreverses: false)
+            ) {
+                wavePhase = .pi * 2 // Un ciclo completo
+            }
         }
     }
     
-    // MARK: - Hero Animation Section (Solo Lottie)
-    private var heroAnimationSection: some View {
-        VStack(spacing: 0) {
+    // MARK: - Hero Animation Section (Lottie + Background)
+    private func heroAnimationSection(geometry: GeometryProxy) -> some View {
+        ZStack {
+            // Background Image
+            Image("backgroundOnboarding")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+                .opacity(showContent ? 1.0 : 0)
+                .animation(
+                    .easeOut(duration: 1.0),
+                    value: showContent
+                )
+            
+            // LottieView encima del background
             LottieView(animation: .named("stress"))
                 .playing(loopMode: .loop)
                 .animationSpeed(0.7)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .scaleEffect(showContent ? 1.4 : 1.0) // 40% más grande
+                .offset(y: -geometry.size.height * 0.12) // 12% más arriba
                 .opacity(showContent ? 1.0 : 0)
                 .animation(
                     .spring(response: 1.2, dampingFraction: 0.75),
@@ -67,8 +90,8 @@ struct WelcomeScreen: View {
     // MARK: - White Content Panel con Onda
     private func whiteContentPanel(geometry: GeometryProxy) -> some View {
         ZStack(alignment: .top) {
-            // Panel blanco con forma de onda
-            WaveShape()
+            // Panel blanco con forma de onda animada
+            AnimatedWaveShape(phase: wavePhase)
                 .fill(Color.white)
                 .shadow(color: .black.opacity(0.05), radius: 10, y: -5)
             
@@ -79,7 +102,7 @@ struct WelcomeScreen: View {
                 // Content Section
                 contentSection
                 
-                Spacer(minLength: 32)
+                Spacer(minLength: 20)
                 
                 // CTA Section con geometry para calcular width
                 ctaSection(geometry: geometry)
@@ -92,7 +115,7 @@ struct WelcomeScreen: View {
     
     // MARK: - Content Section
     private var contentSection: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 12) {
             // App Name con Manrope Bold
             Text("Wellty")
                 .font(.manrope(72, weight: .bold))
@@ -107,7 +130,7 @@ struct WelcomeScreen: View {
             
             // Headline potente y emocional con Semibold
             Text("Instala la versión de ti\nque siempre quisiste ser")
-                .font(.manrope(24, weight: .semibold))
+                .font(.manrope(24, weight: .regular))
                 .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
                 .multilineTextAlignment(.center)
                 .lineSpacing(5)
@@ -178,8 +201,15 @@ struct WelcomeScreen: View {
     }
 }
 
-// MARK: - Wave Shape (Onda de Mar Suave)
-struct WaveShape: Shape {
+// MARK: - Animated Wave Shape (Onda de Mar Suave con Animación)
+struct AnimatedWaveShape: Shape {
+    var phase: Double
+    
+    var animatableData: Double {
+        get { phase }
+        set { phase = newValue }
+    }
+    
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
@@ -198,19 +228,19 @@ struct WaveShape: Shape {
             let x = CGFloat(i) * stepX
             let normalizedX = x / rect.width
             
-            // Función seno para crear ondas suaves como el mar
-            let sineWave = sin(normalizedX * waveFrequency * .pi * 2)
+            // Función seno con phase para crear ondas animadas como el mar
+            let sineWave = sin((normalizedX * waveFrequency * .pi * 2) + phase)
             let y = waveHeight * 0.6 + sineWave * waveHeight * 0.4
             
             let prevX = CGFloat(i - 1) * stepX
             let prevNormalizedX = prevX / rect.width
-            let prevSineWave = sin(prevNormalizedX * waveFrequency * .pi * 2)
+            let prevSineWave = sin((prevNormalizedX * waveFrequency * .pi * 2) + phase)
             let prevY = waveHeight * 0.6 + prevSineWave * waveHeight * 0.4
             
             // Calcular punto de control para curva suave
             let controlX = (prevX + x) / 2
             let controlNormalizedX = controlX / rect.width
-            let controlSineWave = sin(controlNormalizedX * waveFrequency * .pi * 2)
+            let controlSineWave = sin((controlNormalizedX * waveFrequency * .pi * 2) + phase)
             let controlY = waveHeight * 0.6 + controlSineWave * waveHeight * 0.4
             
             // Ajustar punto de control para suavidad adicional
