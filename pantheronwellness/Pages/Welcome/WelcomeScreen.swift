@@ -491,10 +491,8 @@ struct WelcomeScreen: View {
                 impactFeedback.impactOccurred()
                 
                 if howItWorksPage == 0 {
-                    // Ir a página 2
-                    withAnimation(.easeInOut(duration: 0.4)) {
-                        howItWorksPage = 1
-                    }
+                    // Ir a página 2 con transición premium
+                    howItWorksPage = 1
                 } else {
                     // Ir a name input
                     continueToNameInput()
@@ -561,14 +559,14 @@ struct WelcomeScreen: View {
     // Contenido de la página 2
     private func howItWorksContent2() -> some View {
         VStack(spacing: 20) {
-            Text("El ciclo de\nidentidad")
+            Text("Cómo creces\ncada día")
                 .font(.manrope(24, weight: .bold))
                 .foregroundColor(theme.colors.welcomeTextPrimary)
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
             
             VStack(spacing: 12) {
-                Text("1. Eliges quién quieres ser")
+                Text("Eliges una dimensión de tu bienestar")
                     .font(.manrope(16, weight: .semibold))
                     .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
                 
@@ -576,7 +574,7 @@ struct WelcomeScreen: View {
                     .font(.system(size: 20))
                     .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
                 
-                Text("2. Completas 1 micro-acción")
+                Text("Haces algo pequeño pero significativo")
                     .font(.manrope(16, weight: .semibold))
                     .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
                 
@@ -584,7 +582,7 @@ struct WelcomeScreen: View {
                     .font(.system(size: 20))
                     .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
                 
-                Text("3. Creas evidencia")
+                Text("Ves tu progreso crecer")
                     .font(.manrope(16, weight: .semibold))
                     .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
                 
@@ -592,12 +590,12 @@ struct WelcomeScreen: View {
                     .font(.system(size: 20))
                     .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
                 
-                Text("4. Refuerzas tu identidad")
+                Text("Te acercas a quien quieres ser")
                     .font(.manrope(16, weight: .semibold))
                     .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
             }
             
-            Text("2 minutos al día.\n7 dimensiones del wellness.\nUna identidad a la vez.")
+            Text("No se trata de perfección.\nSe trata de progreso.")
                 .font(.manrope(14, weight: .regular))
                 .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
                 .multilineTextAlignment(.center)
