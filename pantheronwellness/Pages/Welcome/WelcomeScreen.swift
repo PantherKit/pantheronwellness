@@ -565,35 +565,48 @@ struct WelcomeScreen: View {
                 .multilineTextAlignment(.center)
                 .lineSpacing(2)
             
-            VStack(spacing: 12) {
-                Text("Eliges una dimensión de tu bienestar")
-                    .font(.manrope(16, weight: .semibold))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+            // Timeline vertical con animación escalonada
+            VStack(spacing: 0) {
+                // Paso 1
+                TimelineStep(
+                    number: 1,
+                    title: "Eliges una dimensión",
+                    subtitle: "De tu bienestar",
+                    isLast: false,
+                    showAnimation: howItWorksPage == 1
+                )
                 
-                Text("↓")
-                    .font(.system(size: 20))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
+                // Paso 2
+                TimelineStep(
+                    number: 2,
+                    title: "Haces algo pequeño",
+                    subtitle: "Pero significativo",
+                    isLast: false,
+                    showAnimation: howItWorksPage == 1,
+                    delay: 0.15
+                )
                 
-                Text("Haces algo pequeño pero significativo")
-                    .font(.manrope(16, weight: .semibold))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+                // Paso 3
+                TimelineStep(
+                    number: 3,
+                    title: "Ves tu progreso",
+                    subtitle: "Crecer día a día",
+                    isLast: false,
+                    showAnimation: howItWorksPage == 1,
+                    delay: 0.30
+                )
                 
-                Text("↓")
-                    .font(.system(size: 20))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
-                
-                Text("Ves tu progreso crecer")
-                    .font(.manrope(16, weight: .semibold))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
-                
-                Text("↓")
-                    .font(.system(size: 20))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
-                
-                Text("Te acercas a quien quieres ser")
-                    .font(.manrope(16, weight: .semibold))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+                // Paso 4
+                TimelineStep(
+                    number: 4,
+                    title: "Te acercas a quien",
+                    subtitle: "Quieres ser",
+                    isLast: true,
+                    showAnimation: howItWorksPage == 1,
+                    delay: 0.45
+                )
             }
+            .padding(.horizontal, 8)
             
             Text("No se trata de perfección.\nSe trata de progreso.")
                 .font(.manrope(14, weight: .regular))
@@ -605,34 +618,69 @@ struct WelcomeScreen: View {
         .padding(.horizontal, 24)
     }
     
+    // MARK: - Timeline Step Component
+    private struct TimelineStep: View {
+        let number: Int
+        let title: String
+        let subtitle: String
+        let isLast: Bool
+        let showAnimation: Bool
+        var delay: Double = 0
+        
+        @Environment(\.appTheme) var theme
+        
+        var body: some View {
+            HStack(alignment: .top, spacing: 12) {
+                // Timeline dot + line
+                VStack(spacing: 0) {
+                    Circle()
+                        .fill(theme.colors.welcomeTextPrimary)
+                        .frame(width: 12, height: 12)
+                        .overlay(
+                            Circle()
+                                .stroke(theme.colors.welcomeTextPrimary.opacity(0.3), lineWidth: 2)
+                                .frame(width: 20, height: 20)
+                        )
+                    
+                    if !isLast {
+                        Rectangle()
+                            .fill(theme.colors.welcomeTextPrimary.opacity(0.3))
+                            .frame(width: 2, height: 36)
+                    }
+                }
+                .padding(.top, 4)
+                
+                // Contenido
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.manrope(16, weight: .semibold))
+                        .foregroundColor(theme.colors.welcomeTextPrimary)
+                    Text(subtitle)
+                        .font(.manrope(14, weight: .regular))
+                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.7))
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.bottom, isLast ? 0 : 4)
+            }
+            .opacity(showAnimation ? 1 : 0)
+            .offset(x: showAnimation ? 0 : -20)
+            .animation(.easeOut(duration: 0.5).delay(delay), value: showAnimation)
+        }
+    }
+    
     // MARK: - Explanation Section
     private func explanationSection(geometry: GeometryProxy) -> some View {
         VStack(spacing: 32) {
-            // Hero Icon Animation
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                Color(hex: 0xB6E2D3).opacity(0.3),
-                                Color(hex: 0x1A5A53).opacity(0.1)
-                            ]),
-                            center: .center,
-                            startRadius: 30,
-                            endRadius: 60
-                        )
-                    )
-                    .frame(width: 100, height: 100)
-                
-                Image(systemName: "sparkles")
-                    .font(.system(size: 40, weight: .light))
-                    .foregroundColor(Color(hex: 0x1A5A53))
-            }
-            .scaleEffect(showOnboardingContent ? 1 : 0.5)
-            .animation(
-                .spring(response: 1.0, dampingFraction: 0.6),
-                value: showOnboardingContent
-            )
+            // Hero Lottie Animation
+            LottieView(animation: .named("calmCircleAnimation"))
+                .playing(loopMode: .loop)
+                .animationSpeed(0.6)
+                .frame(width: 140, height: 140)
+                .scaleEffect(showOnboardingContent ? 1 : 0.5)
+                .animation(
+                    .spring(response: 1.0, dampingFraction: 0.6),
+                    value: showOnboardingContent
+                )
             
             // Explanation Content
             VStack(spacing: 20) {
