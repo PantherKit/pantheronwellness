@@ -139,11 +139,13 @@ struct UserProfile: Codable {
     var name: String
     let startDate: Date
     var identities: [WellnessDimension: Identity]
+    var selectedWellnessFocus: [WellnessDimension]
     
     init(name: String = "Usuario") {
         self.name = name
         self.startDate = Date()
         self.identities = [:]
+        self.selectedWellnessFocus = []
         
         // Inicializar todas las identidades
         for dimension in WellnessDimension.allCases {
@@ -170,6 +172,7 @@ struct UserProfile: Codable {
 enum AppView: Equatable {
     case welcome
     case onboarding
+    case confirmation
     case home
     case assessmentWelcome
     case assessmentQuestion(Int)
@@ -183,6 +186,7 @@ enum AppView: Equatable {
         switch (lhs, rhs) {
         case (.welcome, .welcome),
              (.onboarding, .onboarding),
+             (.confirmation, .confirmation),
              (.home, .home),
              (.assessmentWelcome, .assessmentWelcome),
              (.identitySelection, .identitySelection),

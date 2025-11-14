@@ -8,6 +8,11 @@ class AppCoordinator: ObservableObject {
     @Published var todayCheckIn: DailyCheckIn?
     @Published var userProfile: UserProfile = UserProfile()
     
+    // Onboarding focus selection
+    @Published var selectedFocusDimensions: Set<WellnessDimension> = []
+    let maxFocusDimensions = 3
+    let minFocusDimensions = 2
+    
     // Assessment properties
     @Published var currentAssessment: WellnessAssessment?
     @Published var assessmentResponses: [WellnessDimension: AssessmentResponse] = [:]
@@ -34,10 +39,41 @@ class AppCoordinator: ObservableObject {
         }
     }
     
+    func navigateToConfirmation() {
+        withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
+            currentView = .confirmation
+        }
+    }
+    
     func navigateToHome() {
         withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
             currentView = .home
         }
+    }
+    
+    // MARK: - Focus Dimensions Management
+    func toggleFocusDimension(_ dimension: WellnessDimension) {
+        if selectedFocusDimensions.contains(dimension) {
+            selectedFocusDimensions.remove(dimension)
+        } else {
+            if selectedFocusDimensions.count < maxFocusDimensions {
+                selectedFocusDimensions.insert(dimension)
+            }
+        }
+    }
+    
+    func canSelectMoreDimensions() -> Bool {
+        return selectedFocusDimensions.count < maxFocusDimensions
+    }
+    
+    func hasMinimumDimensionsSelected() -> Bool {
+        return selectedFocusDimensions.count >= minFocusDimensions
+    }
+    
+    func completeFocusSelection() {
+        userProfile.selectedWellnessFocus = Array(selectedFocusDimensions)
+        saveUserProfile()
+        navigateToConfirmation()
     }
     
     func navigateToDailyCheckIn() {

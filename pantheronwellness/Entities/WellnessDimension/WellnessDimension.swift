@@ -49,13 +49,25 @@ enum WellnessDimension: String, CaseIterable, Identifiable, Codable {
     
     var primaryColor: Color {
         switch self {
-        case .physical: return Color(hex: 0x1A5A53)
-        case .emotional: return Color(hex: 0xE6C88B)
-        case .mental: return Color(hex: 0xB6E2D3)
-        case .social: return Color(hex: 0x1A5A53)
-        case .spiritual: return Color(hex: 0xE6C88B)
-        case .professional: return Color(hex: 0xB6E2D3)
-        case .environmental: return Color(hex: 0x1A5A53)
+        case .physical: return Color(hex: 0x1A5A53)      // Verde bosque
+        case .emotional: return Color(hex: 0xE6C88B)     // Amarillo cálido
+        case .mental: return Color(hex: 0xB6E2D3)        // Menta suave
+        case .social: return Color(hex: 0xFF8B7B)        // Coral suave
+        case .spiritual: return Color(hex: 0xB8A4E5)     // Lavanda
+        case .professional: return Color(hex: 0x4A7C8C)  // Azul profundo
+        case .environmental: return Color(hex: 0xA8C686) // Verde lima
+        }
+    }
+    
+    var aspirationalCopy: String {
+        switch self {
+        case .physical: return "Más energía y vitalidad"
+        case .emotional: return "Reconocer tus emociones"
+        case .mental: return "Calma y claridad mental"
+        case .social: return "Conexiones significativas"
+        case .spiritual: return "Propósito y gratitud"
+        case .professional: return "Crecimiento continuo"
+        case .environmental: return "Espacios armoniosos"
         }
     }
     

@@ -39,6 +39,13 @@ struct MainRouterView: View {
                         removal: .move(edge: .leading).combined(with: .opacity)
                     ))
                 
+            case .confirmation:
+                ConfirmationView(coordinator: coordinator)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                
             case .assessmentWelcome:
                 AssessmentWelcomePage(coordinator: coordinator)
                     .transition(.asymmetric(
