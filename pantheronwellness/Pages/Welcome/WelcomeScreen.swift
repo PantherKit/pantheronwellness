@@ -276,15 +276,15 @@ struct WelcomeScreen: View {
     
     // MARK: - Transition Functions
     private func startTransition() {
-        withAnimation(.spring(response: 1.2, dampingFraction: 0.75)) {
-            isTransitioning = true
+        // Crossfade simultáneo premium - sin delays ni flash
+        withAnimation(.easeInOut(duration: 0.4)) {
+            showContent = false
+            showOnboardingContent = true
         }
         
-        // Fade out del texto inicial y mostrar name input
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            withAnimation(.easeInOut(duration: 0.8)) {
-                showOnboardingContent = true
-            }
+        // Panel expansion ligeramente más lenta para suavidad
+        withAnimation(.spring(response: 1.0, dampingFraction: 0.75)) {
+            isTransitioning = true
         }
     }
     
