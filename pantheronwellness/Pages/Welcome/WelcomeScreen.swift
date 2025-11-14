@@ -16,6 +16,8 @@ struct WelcomeScreen: View {
     @State private var wavePhase: Double = 0
     @State private var isTransitioning = false
     @State private var showOnboardingContent = false
+    @State private var showHowItWorks = false  // NUEVO: Para carousel educativo
+    @State private var howItWorksPage: Int = 0  // NUEVO: Página actual del carousel
     @State private var showExplanation = false
     @State private var showDimensionGrid = false
     @State private var showConfirmation = false
@@ -138,6 +140,9 @@ struct WelcomeScreen: View {
                     
                     // CTA Section con geometry para calcular width
                     ctaSection(geometry: geometry)
+                } else if !showHowItWorks {
+                    // How It Works Carousel (NUEVO)
+                    howItWorksCarousel(geometry: geometry)
                 } else if !showNameInput {
                     // Name Input Section
                     nameInputSection(geometry: geometry)
@@ -174,7 +179,7 @@ struct WelcomeScreen: View {
                 )
             
             // Headline potente y emocional con Semibold
-            Text("Instala la versión de ti\nque siempre quisiste ser")
+            Text("No más datos.\nInstala tu nueva identidad.")
                 .font(.manrope(24, weight: .regular))
                 .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
                 .multilineTextAlignment(.center)
@@ -234,7 +239,7 @@ struct WelcomeScreen: View {
             )
             
             // Subtle credibility text
-            Text("Basado en las 7 dimensiones del wellness")
+            Text("Una micro-acción de 2 minutos al día · 7 dimensiones del wellness")
                 .font(.manrope(12, weight: .regular))
                 .foregroundColor(theme.colors.welcomeTextMuted.opacity(0.7))
                 .opacity(showContent ? 1 : 0)
@@ -282,6 +287,20 @@ struct WelcomeScreen: View {
         }
     }
     
+    private func continueToHowItWorks() {
+        // Transición al carousel educativo
+        withAnimation(.easeInOut(duration: 0.6)) {
+            showHowItWorks = true
+        }
+    }
+    
+    private func continueToNameInput() {
+        // Transición al name input
+        withAnimation(.easeInOut(duration: 0.6)) {
+            showNameInput = true
+        }
+    }
+    
     private func continueToExplanation() {
         // Guardar nombre en UserProfile
         coordinator.userProfile.name = userName.isEmpty ? "Usuario" : userName
@@ -293,7 +312,7 @@ struct WelcomeScreen: View {
         
         // Continuar a explanation
         withAnimation(.easeInOut(duration: 0.6)) {
-            showNameInput = true
+            showExplanation = true
         }
         
         // Expandir panel para el grid
@@ -335,10 +354,11 @@ struct WelcomeScreen: View {
                         value: showOnboardingContent
                     )
                 
-                Text("Nos encantaría conocerte mejor")
+                Text("Tu journey personal comienza aquí.\nBasado en las 7 dimensiones del wellness.")
                     .font(.manrope(16, weight: .regular))
                     .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
                     .multilineTextAlignment(.center)
+                    .lineSpacing(4)
                     .opacity(showOnboardingContent ? 1 : 0)
                     .offset(y: showOnboardingContent ? 0 : 15)
                     .animation(
@@ -431,6 +451,178 @@ struct WelcomeScreen: View {
         }
     }
     
+    // MARK: - How It Works Carousel
+    private func howItWorksCarousel(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 0) {
+            TabView(selection: $howItWorksPage) {
+                // Page 1: La Solución (Wellness 2.0)
+                howItWorksPage1()
+                    .tag(0)
+                
+                // Page 2: Cómo Funciona
+                howItWorksPage2(geometry: geometry)
+                    .tag(1)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .always))
+            .indexViewStyle(.page(backgroundDisplayMode: .always))
+        }
+    }
+    
+    private func howItWorksPage1() -> some View {
+        VStack(spacing: 32) {
+            // Lottie Icon - Sunrise Animation
+            LottieView(animation: .named("sunriseAnimation"))
+                .playing(loopMode: .loop)
+                .animationSpeed(0.8)
+                .frame(width: 120, height: 120)
+                .scaleEffect(showOnboardingContent ? 1 : 0.5)
+                .animation(
+                    .spring(response: 1.0, dampingFraction: 0.6),
+                    value: showOnboardingContent
+                )
+            
+            // Content
+            VStack(spacing: 20) {
+                Text("Wellty te ayuda a instalar\nel software de una nueva\nidentidad.\n\nCada pequeña acción cuenta.\nCada día construyes quién eres.")
+                    .font(.manrope(18, weight: .regular))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(6)
+                    .opacity(showOnboardingContent ? 1 : 0)
+                    .offset(y: showOnboardingContent ? 0 : 20)
+                    .animation(
+                        .easeOut(duration: 0.8).delay(0.2),
+                        value: showOnboardingContent
+                    )
+            }
+        }
+    }
+    
+    private func howItWorksPage2(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 32) {
+            // Icon
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color(hex: 0xB6E2D3).opacity(0.3),
+                                Color(hex: 0x1A5A53).opacity(0.1)
+                            ]),
+                            center: .center,
+                            startRadius: 30,
+                            endRadius: 60
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundColor(Color(hex: 0x1A5A53))
+            }
+            .scaleEffect(showOnboardingContent ? 1 : 0.5)
+            .animation(
+                .spring(response: 1.0, dampingFraction: 0.6),
+                value: showOnboardingContent
+            )
+            
+            // Content
+            VStack(spacing: 20) {
+                Text("El ciclo de\nidentidad")
+                    .font(.manrope(32, weight: .bold))
+                    .foregroundColor(theme.colors.welcomeTextPrimary)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                    .opacity(showOnboardingContent ? 1 : 0)
+                    .offset(y: showOnboardingContent ? 0 : 20)
+                    .animation(
+                        .easeOut(duration: 0.8).delay(0.2),
+                        value: showOnboardingContent
+                    )
+                
+                VStack(spacing: 12) {
+                    Text("1. Eliges quién quieres ser")
+                        .font(.manrope(16, weight: .semibold))
+                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+                    
+                    Text("↓")
+                        .font(.system(size: 20))
+                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
+                    
+                    Text("2. Completas 1 micro-acción")
+                        .font(.manrope(16, weight: .semibold))
+                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+                    
+                    Text("↓")
+                        .font(.system(size: 20))
+                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
+                    
+                    Text("3. Creas evidencia")
+                        .font(.manrope(16, weight: .semibold))
+                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+                    
+                    Text("↓")
+                        .font(.system(size: 20))
+                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.4))
+                    
+                    Text("4. Refuerzas tu identidad")
+                        .font(.manrope(16, weight: .semibold))
+                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.9))
+                }
+                .opacity(showOnboardingContent ? 1 : 0)
+                .offset(y: showOnboardingContent ? 0 : 15)
+                .animation(
+                    .easeOut(duration: 0.8).delay(0.4),
+                    value: showOnboardingContent
+                )
+                
+                Text("2 minutos al día.\n7 dimensiones del wellness.\nUna identidad a la vez.")
+                    .font(.manrope(14, weight: .regular))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .padding(.top, 8)
+                    .opacity(showOnboardingContent ? 1 : 0)
+                    .animation(
+                        .easeOut(duration: 0.8).delay(0.6),
+                        value: showOnboardingContent
+                    )
+            }
+            
+            Spacer(minLength: 20)
+            
+            // CTA Button
+            Button(action: {
+                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                impactFeedback.impactOccurred()
+                continueToNameInput()
+            }) {
+                Text("Comenzar mi journey →")
+                    .font(.manrope(16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 16)
+                    .background(
+                        Capsule()
+                            .fill(theme.colors.welcomeTextPrimary)
+                            .shadow(
+                                color: theme.colors.welcomeTextPrimary.opacity(0.3),
+                                radius: 16,
+                                y: 6
+                            )
+                    )
+            }
+            .buttonStyle(PlainButtonStyle())
+            .frame(width: geometry.size.width * 0.75)
+            .opacity(showOnboardingContent ? 1 : 0)
+            .scaleEffect(showOnboardingContent ? 1.0 : 0.9)
+            .animation(
+                .spring(response: 0.7, dampingFraction: 0.75).delay(0.8),
+                value: showOnboardingContent
+            )
+        }
+    }
+    
     // MARK: - Explanation Section
     private func explanationSection(geometry: GeometryProxy) -> some View {
         VStack(spacing: 32) {
@@ -462,10 +654,11 @@ struct WelcomeScreen: View {
             
             // Explanation Content
             VStack(spacing: 20) {
-                Text("Personaliza tu experiencia")
+                Text("¿En qué dimensiones\nquieres enfocarte?")
                     .font(.manrope(32, weight: .bold))
                     .foregroundColor(theme.colors.welcomeTextPrimary)
                     .multilineTextAlignment(.center)
+                    .lineSpacing(2)
                     .opacity(showOnboardingContent ? 1 : 0)
                     .offset(y: showOnboardingContent ? 0 : 20)
                     .animation(
@@ -474,13 +667,13 @@ struct WelcomeScreen: View {
                     )
                 
                 VStack(spacing: 16) {
-                    Text("Vamos a identificar las áreas de tu bienestar que más te importan en este momento.")
+                    Text("Selecciona 2-3 dimensiones que quieras fortalecer.")
                         .font(.manrope(18, weight: .regular))
                         .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.8))
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
                     
-                    Text("Esto nos ayudará a diseñar un journey completamente personalizado para ti, con acciones y recomendaciones adaptadas a tus necesidades.")
+                    Text("Cada día podrás elegir una acción de estas áreas.\nNo te preocupes, podrás cambiarlas después.")
                         .font(.manrope(16, weight: .regular))
                         .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
                         .multilineTextAlignment(.center)
