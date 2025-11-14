@@ -168,10 +168,11 @@ struct UserProfile: Codable {
 }
 
 enum AppView: Equatable {
+    case welcome
     case onboarding
+    case home
     case assessmentWelcome
     case assessmentQuestion(Int)
-    case assessmentResults
     case identitySelection
     case dailyCheckIn
     case dailyAction(WellnessDimension)
@@ -180,9 +181,10 @@ enum AppView: Equatable {
     
     static func == (lhs: AppView, rhs: AppView) -> Bool {
         switch (lhs, rhs) {
-        case (.onboarding, .onboarding),
+        case (.welcome, .welcome),
+             (.onboarding, .onboarding),
+             (.home, .home),
              (.assessmentWelcome, .assessmentWelcome),
-             (.assessmentResults, .assessmentResults),
              (.identitySelection, .identitySelection),
              (.dailyCheckIn, .dailyCheckIn),
              (.progress, .progress):

@@ -9,11 +9,12 @@ struct AssessmentQuestionPage: View {
     @State private var showContent = false
     
     private var question: AssessmentQuestion {
-        AssessmentQuestion.allQuestions[questionIndex]
+        let actualIndex = coordinator.currentQuestionIndex
+        return AssessmentQuestion.allQuestions[actualIndex]
     }
     
     private var isLastQuestion: Bool {
-        questionIndex == AssessmentQuestion.allQuestions.count - 1
+        coordinator.currentQuestionIndex == AssessmentQuestion.allQuestions.count - 1
     }
     
     var body: some View {
@@ -115,6 +116,8 @@ struct AssessmentQuestionPage: View {
                     // Action Button
                     VStack(spacing: 12) {
                         Button(action: {
+                            // Prevenir múltiples taps
+                            hasAnswered = false
                             coordinator.answerAssessmentQuestion(
                                 dimension: question.dimension,
                                 score: Int(currentValue)
@@ -167,6 +170,9 @@ struct AssessmentQuestionPage: View {
             if let existingResponse = coordinator.assessmentResponses[question.dimension] {
                 currentValue = Double(existingResponse.score)
                 hasAnswered = true
+            } else {
+                // Default hasAnswered to true so button is always enabled
+                hasAnswered = true
             }
         }
         .gesture(
@@ -184,7 +190,7 @@ struct AssessmentQuestionPage: View {
     
     // MARK: - Computed Properties
     private var progressText: String {
-        "Pregunta \(questionIndex + 1) de \(AssessmentQuestion.allQuestions.count)"
+        "Pregunta \(coordinator.currentQuestionIndex + 1) de \(AssessmentQuestion.allQuestions.count)"
     }
     
     private var progressPercentageText: String {
@@ -192,7 +198,7 @@ struct AssessmentQuestionPage: View {
     }
     
     private var progressPercentage: Double {
-        Double(questionIndex + 1) / Double(AssessmentQuestion.allQuestions.count)
+        Double(coordinator.currentQuestionIndex + 1) / Double(AssessmentQuestion.allQuestions.count)
     }
     
     private var buttonBackground: some View {

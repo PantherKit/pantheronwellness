@@ -75,9 +75,9 @@ struct OnboardingView: View {
                     // CTA Button
                     VStack(spacing: 16) {
                         AnimatedButton(
-                            title: "Comenzar",
+                            title: "Continuar",
                             action: {
-                                coordinator.startAssessment()
+                                coordinator.navigateToHome()
                             },
                             style: .primary
                         )

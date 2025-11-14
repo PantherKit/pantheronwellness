@@ -1,0 +1,75 @@
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: physical, score: 4
+🔥 DEBUG: currentQuestionIndex: 0
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Moving to next question: 1
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: emotional, score: 2
+🔥 DEBUG: currentQuestionIndex: 1
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Moving to next question: 2
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: mental, score: 4
+🔥 DEBUG: currentQuestionIndex: 2
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Moving to next question: 3
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: social, score: 5
+🔥 DEBUG: currentQuestionIndex: 3
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Moving to next question: 4
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: spiritual, score: 2
+🔥 DEBUG: currentQuestionIndex: 4
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Moving to next question: 5
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: professional, score: 4
+🔥 DEBUG: currentQuestionIndex: 5
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Moving to next question: 6
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: environmental, score: 4
+🔥 DEBUG: currentQuestionIndex: 6
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Completing assessment
+🔥 DEBUG: completeAssessment() started
+🔥 DEBUG: Assessment saved, navigating to results
+🔥 DEBUG: Navigation to assessmentResults triggered
+🔥 DEBUG: Personalized journey generated
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: environmental, score: 4
+🔥 DEBUG: currentQuestionIndex: 6
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Completing assessment
+🔥 DEBUG: completeAssessment() started
+🔥 DEBUG: Assessment saved, navigating to results
+🔥 DEBUG: Navigation to assessmentResults triggered
+🔥 DEBUG: Personalized journey generated
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: environmental, score: 4
+🔥 DEBUG: currentQuestionIndex: 6
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Completing assessment
+🔥 DEBUG: completeAssessment() started
+🔥 DEBUG: Assessment saved, navigating to results
+🔥 DEBUG: Navigation to assessmentResults triggered
+🔥 DEBUG: Personalized journey generated
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: environmental, score: 4
+🔥 DEBUG: currentQuestionIndex: 6
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Completing assessment
+🔥 DEBUG: completeAssessment() started
+🔥 DEBUG: Assessment saved, navigating to results
+🔥 DEBUG: Navigation to assessmentResults triggered
+🔥 DEBUG: Personalized journey generated
+🔥 DEBUG AppCoordinator: answerAssessmentQuestion called
+🔥 DEBUG: dimension: environmental, score: 4
+🔥 DEBUG: currentQuestionIndex: 6
+🔥 DEBUG: total questions: 7
+🔥 DEBUG: Completing assessment
+🔥 DEBUG: completeAssessment() started
+🔥 DEBUG: Assessment saved, navigating to results
+🔥 DEBUG: Navigation to assessmentResults triggered
+🔥 DEBUG: Personalized journey generated

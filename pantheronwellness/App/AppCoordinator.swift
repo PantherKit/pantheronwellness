@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 
 class AppCoordinator: ObservableObject {
-    @Published var currentView: AppView = .onboarding
+    @Published var currentView: AppView = .welcome
     @Published var selectedDimension: WellnessDimension?
     @Published var selectedSleepQuality: SleepQuality = .good
     @Published var todayCheckIn: DailyCheckIn?
@@ -23,10 +23,23 @@ class AppCoordinator: ObservableObject {
     init() {
         loadUserProfile()
         loadTodayCheckIn()
-        checkIfShouldShowOnboarding()
+        // Siempre empezar en welcome para flujo simple
+        currentView = .welcome
     }
     
     // MARK: - Navigation
+    func navigateToOnboarding() {
+        withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
+            currentView = .onboarding
+        }
+    }
+    
+    func navigateToHome() {
+        withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
+            currentView = .home
+        }
+    }
+    
     func navigateToDailyCheckIn() {
         withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
             currentView = .dailyCheckIn
@@ -62,7 +75,7 @@ class AppCoordinator: ObservableObject {
         }
     }
     
-    // MARK: - Assessment Navigation
+    // MARK: - Assessment Navigation (mantener para compatibilidad)
     func startAssessment() {
         assessmentResponses = [:]
         currentQuestionIndex = 0
@@ -78,30 +91,46 @@ class AppCoordinator: ObservableObject {
     }
     
     func answerAssessmentQuestion(dimension: WellnessDimension, score: Int) {
+        print("🔥 DEBUG AppCoordinator: answerAssessmentQuestion called")
+        print("🔥 DEBUG: dimension: \(dimension), score: \(score)")
+        print("🔥 DEBUG: currentQuestionIndex: \(currentQuestionIndex)")
+        print("🔥 DEBUG: total questions: \(AssessmentQuestion.allQuestions.count)")
+        
         assessmentResponses[dimension] = AssessmentResponse(dimension: dimension, score: score)
         
         if currentQuestionIndex < AssessmentQuestion.allQuestions.count - 1 {
             currentQuestionIndex += 1
+            print("🔥 DEBUG: Moving to next question: \(currentQuestionIndex)")
             withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
                 currentView = .assessmentQuestion(currentQuestionIndex)
             }
         } else {
+            print("🔥 DEBUG: Completing assessment")
             completeAssessment()
         }
     }
     
     private func completeAssessment() {
+        print("🔥 DEBUG: completeAssessment() started")
+        
         let assessment = WellnessAssessment(responses: assessmentResponses)
         currentAssessment = assessment
         saveAssessment(assessment)
         
-        Task {
-            await personalizationService.generatePersonalizedJourney(from: assessment)
+        print("🔥 DEBUG: Assessment saved, navigating to results")
+        
+        // Navigate immediately and generate journey in background
+        withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
+            currentView = .home
         }
         
-        withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
-            currentView = .assessmentResults
+        // Generate journey in background (non-blocking)
+        Task {
+            await personalizationService.generatePersonalizedJourney(from: assessment)
+            print("🔥 DEBUG: Personalized journey generated")
         }
+        
+        print("🔥 DEBUG: Navigation to assessmentResults triggered")
     }
     
     func navigateToIdentitySelection() {
