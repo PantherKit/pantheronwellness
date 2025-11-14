@@ -17,7 +17,7 @@ struct ProgressView: View {
     var body: some View {
         GeometryReader { _ in
             ZStack {
-                theme.colors.background
+                Color.white
                     .ignoresSafeArea()
                 
                 ScrollView {

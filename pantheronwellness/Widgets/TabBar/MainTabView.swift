@@ -147,7 +147,7 @@ struct ProfilePlaceholderView: View {
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(theme.colors.background)
+        .background(Color.white)
     }
 }
 
