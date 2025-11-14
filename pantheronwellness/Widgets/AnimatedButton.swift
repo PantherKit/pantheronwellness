@@ -12,6 +12,7 @@ struct AnimatedButton: View {
         case primary
         case secondary
         case ghost
+        case welcomePrimary
     }
     
     var body: some View {
@@ -25,16 +26,17 @@ struct AnimatedButton: View {
             Text(title)
                 .font(theme.typography.button)
                 .foregroundColor(textColor)
-                .padding(.horizontal, 32)
-                .padding(.vertical, 16)
+                .padding(.horizontal, 40)
+                .padding(.vertical, 18)
+                .frame(maxWidth: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 16)
+                    RoundedRectangle(cornerRadius: 20)
                         .fill(backgroundColor)
                         .shadow(
                             color: shadowColor,
-                            radius: isPressed ? 2 : 8,
+                            radius: isPressed ? 2 : 12,
                             x: 0,
-                            y: isPressed ? 1 : 4
+                            y: isPressed ? 1 : 6
                         )
                 )
                 .scaleEffect(isPressed ? 0.97 : 1.0)
@@ -54,6 +56,8 @@ struct AnimatedButton: View {
             return isPressed ? theme.colors.secondary.opacity(0.8) : theme.colors.secondary
         case .ghost:
             return isPressed ? theme.colors.outline.opacity(0.3) : theme.colors.outline.opacity(0.1)
+        case .welcomePrimary:
+            return isPressed ? theme.colors.welcomeCTABackground.opacity(0.9) : theme.colors.welcomeCTABackground
         }
     }
     
@@ -65,6 +69,8 @@ struct AnimatedButton: View {
             return theme.colors.onSecondary
         case .ghost:
             return theme.colors.primary
+        case .welcomePrimary:
+            return theme.colors.welcomeCTAText
         }
     }
     
@@ -76,6 +82,8 @@ struct AnimatedButton: View {
             return theme.colors.secondary.opacity(0.3)
         case .ghost:
             return Color.clear
+        case .welcomePrimary:
+            return theme.colors.welcomeCTABackground.opacity(0.15)
         }
     }
 }

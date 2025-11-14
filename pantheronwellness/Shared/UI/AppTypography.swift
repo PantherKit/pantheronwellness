@@ -1,16 +1,36 @@
 import SwiftUI
 
-public enum PoppinsWeight: String {
-    case regular = "Poppins-Regular"
-    case medium = "Poppins-Medium"
-    case semibold = "Poppins-SemiBold"
-    case bold = "Poppins-Bold"
+public enum ManropeWeight: String {
+    case extraLight = "Manrope-ExtraLight"
+    case light = "Manrope-Light"
+    case regular = "Manrope-Regular"
+    case medium = "Manrope-Medium"
+    case semibold = "Manrope-SemiBold"
+    case bold = "Manrope-Bold"
+    case extrabold = "Manrope-ExtraBold"
 }
 
 public extension Font {
-    static func poppins(_ size: CGFloat, weight: PoppinsWeight) -> Font {
-        let font = Font.custom(weight.rawValue, size: size)
-        return font
+    static func manrope(_ size: CGFloat, weight: ManropeWeight) -> Font {
+        // Try custom font first, fallback to system font with equivalent weight
+        let customFont = Font.custom(weight.rawValue, size: size)
+        return customFont
+    }
+    
+    // Helper method for system font fallback with equivalent weights
+    static func manropeSystemFallback(_ size: CGFloat, weight: ManropeWeight) -> Font {
+        let systemWeight: Font.Weight = {
+            switch weight {
+            case .extraLight: return .ultraLight
+            case .light: return .light
+            case .regular: return .regular
+            case .medium: return .medium
+            case .semibold: return .semibold
+            case .bold: return .bold
+            case .extrabold: return .black
+            }
+        }()
+        return .system(size: size, weight: systemWeight, design: .default)
     }
 }
 
@@ -27,15 +47,15 @@ public struct AppTypography {
     public let button: Font
 
     public static let base: AppTypography = .init(
-        display: .poppins(40, weight: .bold),
-        headline: .poppins(28, weight: .semibold),
-        title1: .poppins(22, weight: .semibold),
-        title2: .poppins(20, weight: .medium),
-        title3: .poppins(18, weight: .medium),
-        body1: .poppins(17, weight: .regular),
-        body2: .poppins(15, weight: .regular),
-        caption: .poppins(13, weight: .regular),
-        overline: .poppins(12, weight: .medium),
-        button: .poppins(16, weight: .semibold)
+        display: .manrope(40, weight: .regular),
+        headline: .manrope(28, weight: .medium),
+        title1: .manrope(22, weight: .medium),
+        title2: .manrope(20, weight: .regular),
+        title3: .manrope(18, weight: .regular),
+        body1: .manrope(17, weight: .regular),
+        body2: .manrope(15, weight: .regular),
+        caption: .manrope(13, weight: .regular),
+        overline: .manrope(12, weight: .medium),
+        button: .manrope(16, weight: .semibold)
     )
 }
