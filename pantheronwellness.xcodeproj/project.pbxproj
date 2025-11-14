@@ -8,15 +8,30 @@
 
 /* Begin PBXBuildFile section */
 		F95F12772EC6581400DAF6CB /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = F95F12762EC6581400DAF6CB /* RiveRuntime */; };
+		F9C1B2532EC6FC9C00AB3F18 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = F9C1B2522EC6FC9C00AB3F18 /* Lottie */; };
+		F9C1B2552EC6FC9C00AB3F18 /* Lottie-Dynamic in Frameworks */ = {isa = PBXBuildFile; productRef = F9C1B2542EC6FC9C00AB3F18 /* Lottie-Dynamic */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		F95F12672EC64EEE00DAF6CB /* pantheronwellness.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pantheronwellness.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		F9C1B24A2EC6FB2E00AB3F18 /* Exceptions for "pantheronwellness" folder in "pantheronwellness" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = F95F12662EC64EEE00DAF6CB /* pantheronwellness */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		F95F12692EC64EEE00DAF6CB /* pantheronwellness */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				F9C1B24A2EC6FB2E00AB3F18 /* Exceptions for "pantheronwellness" folder in "pantheronwellness" target */,
+			);
 			path = pantheronwellness;
 			sourceTree = "<group>";
 		};
@@ -28,6 +43,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				F95F12772EC6581400DAF6CB /* RiveRuntime in Frameworks */,
+				F9C1B2532EC6FC9C00AB3F18 /* Lottie in Frameworks */,
+				F9C1B2552EC6FC9C00AB3F18 /* Lottie-Dynamic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -71,6 +88,8 @@
 			name = pantheronwellness;
 			packageProductDependencies = (
 				F95F12762EC6581400DAF6CB /* RiveRuntime */,
+				F9C1B2522EC6FC9C00AB3F18 /* Lottie */,
+				F9C1B2542EC6FC9C00AB3F18 /* Lottie-Dynamic */,
 			);
 			productName = pantheronwellness;
 			productReference = F95F12672EC64EEE00DAF6CB /* pantheronwellness.app */;
@@ -102,6 +121,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				F95F12752EC6581400DAF6CB /* XCRemoteSwiftPackageReference "rive-ios" */,
+				F9C1B2512EC6FC9C00AB3F18 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F95F12682EC64EEE00DAF6CB /* Products */;
@@ -263,6 +283,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = pantheronwellness/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -307,6 +328,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = pantheronwellness/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -370,6 +392,14 @@
 				minimumVersion = 6.12.2;
 			};
 		};
+		F9C1B2512EC6FC9C00AB3F18 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.2;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -377,6 +407,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = F95F12752EC6581400DAF6CB /* XCRemoteSwiftPackageReference "rive-ios" */;
 			productName = RiveRuntime;
+		};
+		F9C1B2522EC6FC9C00AB3F18 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F9C1B2512EC6FC9C00AB3F18 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
+		};
+		F9C1B2542EC6FC9C00AB3F18 /* Lottie-Dynamic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F9C1B2512EC6FC9C00AB3F18 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = "Lottie-Dynamic";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

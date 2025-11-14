@@ -395,6 +395,7 @@ func getSuggestedDimensionForToday() -> WellnessDimension? {
 
 ### ✅ MVP Completado (Hackathon Ready)
 
+- [x] **Welcome Screen premium** con Manrope, headline potente, value props
 - [x] Onboarding con selección de dimensiones
 - [x] Home estilo Duolingo
 - [x] Action flow completo (timer + feedback)
@@ -403,6 +404,7 @@ func getSuggestedDimensionForToday() -> WellnessDimension? {
 - [x] Daily challenges
 - [x] Sugerencia automática de dimensión
 - [x] Persistencia básica (UserDefaults)
+- [x] **Tipografía Manrope** instalada (7 pesos) con fallback inteligente
 
 ### 🚧 Post-MVP (Iteraciones Futuras)
 
