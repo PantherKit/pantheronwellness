@@ -349,32 +349,31 @@ struct WelcomeScreen: View {
             
             Spacer().frame(height: 24)  // Separación clara del input
             
-            // TextField
-            TextField("Escribe tu nombre aquí", text: $userName)
-                .font(.manrope(20, weight: .regular))
-                .foregroundColor(theme.colors.welcomeTextPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.vertical, 16)
-                .padding(.horizontal, 24)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color(hex: 0xB6E2D3).opacity(0.1))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color(hex: 0x1A5A53).opacity(0.2), lineWidth: 1.5)
-                        )
-                )
-                .opacity(showOnboardingContent ? 1 : 0)
-                .offset(y: showOnboardingContent ? 0 : 20)
-                .animation(
-                    .easeOut(duration: 0.8).delay(0.6),
-                    value: showOnboardingContent
-                )
+            // TextField Minimalista
+            VStack(spacing: 8) {
+                TextField("Me gusta que me digan...", text: $userName)
+                    .font(.manrope(20, weight: .regular))
+                    .foregroundColor(theme.colors.welcomeTextPrimary)
+                    .multilineTextAlignment(.center)
+                    .padding(.vertical, 8)
+                
+                // Línea inferior minimalista
+                Rectangle()
+                    .fill(theme.colors.welcomeTextPrimary.opacity(0.3))
+                    .frame(height: 1)
+                    .frame(maxWidth: 200)
+            }
+            .opacity(showOnboardingContent ? 1 : 0)
+            .offset(y: showOnboardingContent ? 0 : 20)
+            .animation(
+                .easeOut(duration: 0.8).delay(0.6),
+                value: showOnboardingContent
+            )
             
             Spacer().frame(height: 44)  // Compacto pero elegante
             
             // Buttons (grupo de acciones)
-            VStack(spacing: 12) {
+            VStack(spacing: 244) {
                 // Continue Button
                 Button(action: {
                     let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
