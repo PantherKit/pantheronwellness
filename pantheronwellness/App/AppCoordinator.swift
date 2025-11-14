@@ -95,7 +95,7 @@ class AppCoordinator: ObservableObject {
         userProfile.currentDailyChallenge = DailyChallenge.generateDailyChallenge()
         
         saveUserProfile()
-        navigateToConfirmation()
+        navigateToHome()
     }
     
     // MARK: - Daily Dimension Selection
