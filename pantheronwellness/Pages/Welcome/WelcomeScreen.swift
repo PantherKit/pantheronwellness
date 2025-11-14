@@ -242,6 +242,7 @@ struct WelcomeScreen: View {
             Text("Una micro-acción de 2 minutos al día · 7 dimensiones del wellness")
                 .font(.manrope(12, weight: .regular))
                 .foregroundColor(theme.colors.welcomeTextMuted.opacity(0.7))
+                .multilineTextAlignment(.center)
                 .opacity(showContent ? 1 : 0)
                 .animation(
                     .easeOut(duration: 0.6).delay(1.5),
