@@ -392,7 +392,7 @@ class AppCoordinator: ObservableObject {
         userProfile = decoded
     }
     
-    private func saveUserProfile() {
+    func saveUserProfile() {
         if let encoded = try? JSONEncoder().encode(userProfile) {
             userDefaults.set(encoded, forKey: profileKey)
         }

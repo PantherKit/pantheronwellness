@@ -3,7 +3,14 @@ import Lottie
 
 struct WelcomeScreen: View {
     @EnvironmentObject var coordinator: AppCoordinator
-    @State private var showContent = false
+    
+    // Secuencia de animación premium
+    @State private var showBackground = false      // T0.0s
+    @State private var showLottie = false          // T1.0s
+    @State private var showWavePanel = false       // T2.2s
+    @State private var showContent = false         // T2.8s
+    
+    // Estados existentes
     @State private var animationLoaded = false
     @State private var isButtonPressed = false
     @State private var wavePhase: Double = 0
@@ -15,6 +22,8 @@ struct WelcomeScreen: View {
     @State private var isLottieActive = true
     @State private var currentCarouselIndex: Int = 0
     @State private var scrollOffset: CGFloat = 0
+    @State private var showNameInput = false
+    @State private var userName: String = ""
     @Namespace private var animationNamespace
     @Environment(\.appTheme) var theme
     
@@ -51,11 +60,10 @@ struct WelcomeScreen: View {
             AppTypography.debugFontStatus()
             #endif
             
-            withAnimation(.easeOut(duration: 0.8)) {
-                showContent = true
-            }
+            // Secuencia de animación premium y calm
+            startPremiumAnimationSequence()
             
-            // Iniciar animación continua de olas (más lenta y relajante)
+            // Iniciar animación continua de olas
             startWaveAnimation()
         }
     
@@ -64,29 +72,29 @@ struct WelcomeScreen: View {
     // MARK: - Hero Animation Section (Lottie + Background)
     private func heroAnimationSection(geometry: GeometryProxy) -> some View {
         ZStack {
-            // Background Image
+            // Background Image - Aparece primero (T0.0s)
             Image("backgroundOnboarding")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
-                .opacity(showContent ? 1.0 : 0)
+                .opacity(showBackground ? 1.0 : 0)
                 .animation(
-                    .easeOut(duration: 1.0),
-                    value: showContent
+                    .easeOut(duration: 1.2),
+                    value: showBackground
                 )
             
-            // LottieView encima del background
+            // LottieView - Aparece después con scale elegante (T1.0s)
             LottieView(animation: .named("stress"))
                 .playing(loopMode: isLottieActive ? .loop : .playOnce)
                 .animationSpeed(0.7)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .scaleEffect(showContent ? 1.4 : 1.0) // 40% más grande
-                .offset(y: -geometry.size.height * 0.12) // 12% más arriba
-                .opacity(showContent ? (isLottieActive ? 1.0 : 0.3) : 0)
+                .scaleEffect(showLottie ? 1.4 : 0) // Crece desde 0 (invisible)
+                .offset(y: -geometry.size.height * 0.12)
+                .opacity(isLottieActive ? 1.0 : 0.3) // Sin fade, siempre visible
                 .animation(
-                    .spring(response: 1.2, dampingFraction: 0.75),
-                    value: showContent
+                    .spring(response: 1.4, dampingFraction: 0.7),
+                    value: showLottie
                 )
                 .animation(
                     .easeOut(duration: 0.5),
@@ -103,7 +111,7 @@ struct WelcomeScreen: View {
     // MARK: - White Content Panel con Onda
     private func whiteContentPanel(geometry: GeometryProxy) -> some View {
         ZStack(alignment: .top) {
-            // Panel blanco con forma de onda animada
+            // Panel blanco con forma de onda animada - Sube desde abajo (T2.2s)
             AnimatedWaveShape(
                 phase: wavePhase,
                 isTransitioning: isTransitioning,
@@ -111,6 +119,12 @@ struct WelcomeScreen: View {
             )
                 .fill(Color.white)
                 .shadow(color: .black.opacity(0.05), radius: 10, y: -5)
+                .offset(y: showWavePanel ? 0 : geometry.size.height * 0.3)
+                .opacity(showWavePanel ? 1 : 0)
+                .animation(
+                    .spring(response: 1.2, dampingFraction: 0.8),
+                    value: showWavePanel
+                )
             
             // Contenido dentro del panel
             VStack(spacing: 0) {
@@ -124,6 +138,9 @@ struct WelcomeScreen: View {
                     
                     // CTA Section con geometry para calcular width
                     ctaSection(geometry: geometry)
+                } else if !showNameInput {
+                    // Name Input Section
+                    nameInputSection(geometry: geometry)
                 } else if !showExplanation {
                     // Explanation Step
                     explanationSection(geometry: geometry)
@@ -228,28 +245,189 @@ struct WelcomeScreen: View {
         }
     }
     
+    // MARK: - Premium Animation Sequence
+    private func startPremiumAnimationSequence() {
+        // T0.0s: Background aparece inmediatamente
+        withAnimation(.easeOut(duration: 1.2)) {
+            showBackground = true
+        }
+        
+        // T1.0s: Lottie scale + Wave panel suben simultáneamente
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            withAnimation(.spring(response: 1.4, dampingFraction: 0.7)) {
+                showLottie = true
+                showWavePanel = true  // Sube al mismo tiempo
+            }
+        }
+        
+        // T1.6s: Contenido aparece (después del wave panel)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            withAnimation(.easeOut(duration: 0.8)) {
+                showContent = true
+            }
+        }
+    }
+    
     // MARK: - Transition Functions
     private func startTransition() {
         withAnimation(.spring(response: 1.2, dampingFraction: 0.75)) {
             isTransitioning = true
         }
         
-        // Cambiar velocidad de olas y desactivar Lottie después de la expansión
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-            isLottieActive = false
-            // Reiniciar animación de olas con velocidad más lenta
-            startWaveAnimation()
-            
-            // Expandir aún más para el grid
+        // Fade out del texto inicial y mostrar name input
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            withAnimation(.easeInOut(duration: 0.8)) {
+                showOnboardingContent = true
+            }
+        }
+    }
+    
+    private func continueToExplanation() {
+        // Guardar nombre en UserProfile
+        coordinator.userProfile.name = userName.isEmpty ? "Usuario" : userName
+        coordinator.saveUserProfile()
+        
+        // Cambiar velocidad de olas y desactivar Lottie
+        isLottieActive = false
+        startWaveAnimation()
+        
+        // Continuar a explanation
+        withAnimation(.easeInOut(duration: 0.6)) {
+            showNameInput = true
+        }
+        
+        // Expandir panel para el grid
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             withAnimation(.spring(response: 1.0, dampingFraction: 0.75)) {
                 showDimensionGrid = true
             }
         }
-        
-        // Fade out más rápido del texto inicial (20% más rápido)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            withAnimation(.easeInOut(duration: 0.8)) {
-                showOnboardingContent = true
+    }
+    
+    // MARK: - Name Input Section
+    private func nameInputSection(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 0) {  // Control total del spacing
+            // Lottie Icon - Sunrise Animation
+            LottieView(animation: .named("sunriseAnimation"))
+                .playing(loopMode: .loop)
+                .animationSpeed(0.8)
+                .frame(width: 340, height: 250)
+                .scaleEffect(showOnboardingContent ? 1 : 0.5)
+                .animation(
+                    .spring(response: 1.0, dampingFraction: 0.6),
+                    value: showOnboardingContent
+                )
+            
+            Spacer().frame(height: 12)  // Entre Lottie y texto
+            
+            // Title and description (grupo cohesivo)
+            VStack(spacing: 12) {  // Más íntimo: 18 → 12
+                Text("¿Cómo te gustaría que te llamemos?")
+                    .font(.manrope(32, weight: .bold))
+                    .foregroundColor(theme.colors.welcomeTextPrimary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(nil)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .opacity(showOnboardingContent ? 1 : 0)
+                    .offset(y: showOnboardingContent ? 0 : 20)
+                    .animation(
+                        .easeOut(duration: 0.8).delay(0.2),
+                        value: showOnboardingContent
+                    )
+                
+                Text("Nos encantaría conocerte mejor")
+                    .font(.manrope(16, weight: .regular))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .opacity(showOnboardingContent ? 1 : 0)
+                    .offset(y: showOnboardingContent ? 0 : 15)
+                    .animation(
+                        .easeOut(duration: 0.8).delay(0.4),
+                        value: showOnboardingContent
+                    )
+            }
+            
+            Spacer().frame(height: 24)  // Separación clara del input
+            
+            // TextField
+            TextField("Escribe tu nombre aquí", text: $userName)
+                .font(.manrope(20, weight: .regular))
+                .foregroundColor(theme.colors.welcomeTextPrimary)
+                .multilineTextAlignment(.center)
+                .padding(.vertical, 16)
+                .padding(.horizontal, 24)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(hex: 0xB6E2D3).opacity(0.1))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(Color(hex: 0x1A5A53).opacity(0.2), lineWidth: 1.5)
+                        )
+                )
+                .opacity(showOnboardingContent ? 1 : 0)
+                .offset(y: showOnboardingContent ? 0 : 20)
+                .animation(
+                    .easeOut(duration: 0.8).delay(0.6),
+                    value: showOnboardingContent
+                )
+            
+            Spacer().frame(height: 44)  // Compacto pero elegante
+            
+            // Buttons (grupo de acciones)
+            VStack(spacing: 12) {
+                // Continue Button
+                Button(action: {
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                    impactFeedback.impactOccurred()
+                    
+                    // Dismiss keyboard
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    
+                    continueToExplanation()
+                }) {
+                    Text("Continuar")
+                        .font(.manrope(16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 16)
+                        .background(
+                            Capsule()
+                                .fill(theme.colors.welcomeTextPrimary)
+                                .shadow(
+                                    color: theme.colors.welcomeTextPrimary.opacity(0.3),
+                                    radius: 16,
+                                    y: 6
+                                )
+                        )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .frame(width: geometry.size.width * 0.65)
+                .opacity(showOnboardingContent ? 1 : 0)
+                .scaleEffect(showOnboardingContent ? 1.0 : 0.9)
+                .animation(
+                    .spring(response: 0.7, dampingFraction: 0.75).delay(0.8),
+                    value: showOnboardingContent
+                )
+                
+                // Skip text
+                Button(action: {
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                    impactFeedback.impactOccurred()
+                    
+                    // Dismiss keyboard
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    
+                    continueToExplanation()
+                }) {
+                    Text("Prefiero no decirlo")
+                        .font(.manrope(14, weight: .regular))
+                        .foregroundColor(theme.colors.welcomeTextMuted.opacity(0.7))
+                }
+                .opacity(showOnboardingContent ? 1 : 0)
+                .animation(
+                    .easeOut(duration: 0.6).delay(1.0),
+                    value: showOnboardingContent
+                )
             }
         }
     }
@@ -368,7 +546,7 @@ struct WelcomeScreen: View {
     
     // MARK: - Wave Animation Control
     private func startWaveAnimation() {
-        let duration = isTransitioning ? 8.4 : 6.0 // 40% más lenta durante transición
+        let duration = isTransitioning ? 8.4 : 10.0 // Más lenta en estado inicial: 6.0 → 10.0
         withAnimation(
             .linear(duration: duration)
             .repeatForever(autoreverses: false)
@@ -746,8 +924,8 @@ struct AnimatedWaveShape: Shape {
         var path = Path()
         
         // Curvatura adaptativa: más sutil cuando se muestra el grid
-        let waveHeight: CGFloat = showingGrid ? 15 : (isTransitioning ? 20 : 35)
-        let waveFrequency: CGFloat = showingGrid ? 1.8 : (isTransitioning ? 2.0 : 2.5)
+        let waveHeight: CGFloat = showingGrid ? 15 : (isTransitioning ? 20 : 25)  // Menos pronunciada: 35 → 25
+        let waveFrequency: CGFloat = showingGrid ? 1.8 : (isTransitioning ? 2.0 : 1.5)  // Menos frecuencia: 2.5 → 1.5
         
         // Inicio desde la esquina superior izquierda
         let startY = waveHeight * 0.6 + sin(0) * waveHeight * 0.4
