@@ -5,7 +5,6 @@ struct FeedbackCompletionView: View {
     let dimension: WellnessDimension
     let xpEarned: Int
     let newStreak: Int
-    let onContinue: () -> Void
     
     @State private var showContent = false
     @State private var showConfetti = false
@@ -141,7 +140,9 @@ struct FeedbackCompletionView: View {
                 Spacer()
                 
                 // Continue Button
-                Button(action: onContinue) {
+                Button(action: {
+                    coordinator.navigateToHome()
+                }) {
                     Text("Continuar")
                         .font(theme.typography.button)
                         .fontWeight(.semibold)
@@ -253,8 +254,7 @@ struct ConfettiShape: Shape {
     FeedbackCompletionView(
         dimension: .mental,
         xpEarned: 30,
-        newStreak: 8,
-        onContinue: {}
+        newStreak: 8
     )
     .environmentObject(AppCoordinator())
 }

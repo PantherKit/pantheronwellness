@@ -221,6 +221,11 @@ struct ActionTimerView: View {
     }
     
     private func completeAction() {
+        // Haptic feedback
+        let impact = UINotificationFeedbackGenerator()
+        impact.notificationOccurred(.success)
+        
+        // Complete action (calcula XP, streak, navega a feedback)
         coordinator.completeAction(for: dimension)
     }
     

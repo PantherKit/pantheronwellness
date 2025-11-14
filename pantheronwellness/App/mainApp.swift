@@ -66,10 +66,7 @@ struct MainRouterView: View {
                 FeedbackCompletionView(
                     dimension: dimension,
                     xpEarned: xpEarned,
-                    newStreak: newStreak,
-                    onContinue: {
-                        coordinator.navigateToMainTab()
-                    }
+                    newStreak: newStreak
                 )
                 .environmentObject(coordinator)
                 .transition(.asymmetric(

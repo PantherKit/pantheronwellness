@@ -15,27 +15,22 @@ struct HomePage: View {
         }
     }
     
-    private var heroMessage: String {
-        let hour = Calendar.current.component(.hour, from: Date())
-        switch hour {
-        case 5...11: return "¡Buenos días! Comienza tu día con bienestar"
-        case 12...17: return "Momento perfecto para tu micro-acción"
-        case 18...22: return "Cierra el día cuidando de ti"
-        default: return "Tu bienestar te espera"
-        }
+    private var suggestedDimension: WellnessDimension? {
+        coordinator.getSuggestedDimensionForToday()
     }
     
-    private var heroSubtitle: String {
-        if coordinator.userProfile.currentStreak > 0 {
-            return "Llevas \(coordinator.userProfile.currentStreak) días construyendo tu mejor versión"
-        } else {
-            return "Cada pequeña acción cuenta en tu journey"
+    private var weekProgress: Int {
+        let calendar = Calendar.current
+        let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
+        let completedThisWeek = coordinator.userProfile.dailyProgressHistory.filter {
+            $0.date >= weekStart
         }
+        return completedThisWeek.count
     }
     
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 32) {
+            VStack(spacing: 28) {
                 // Top Bar
                 HomeTopBar(
                     userName: coordinator.userProfile.name,
@@ -44,6 +39,8 @@ struct HomePage: View {
                 )
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
+                .opacity(showContent ? 1 : 0)
+                .animation(.easeOut(duration: 0.6), value: showContent)
                 
                 // Greeting
                 HStack {
@@ -57,27 +54,39 @@ struct HomePage: View {
                 .offset(y: showContent ? 0 : 20)
                 .animation(.easeOut(duration: 0.6).delay(0.1), value: showContent)
                 
-                // Hero Section
-                HomeHeroSection(
-                    message: heroMessage,
-                    subtitle: heroSubtitle
+                // Primary Action Card
+                if let dimension = suggestedDimension {
+                    PrimaryActionCard(
+                        dimension: dimension,
+                        onStart: {
+                            coordinator.navigateToActionTimer(dimension: dimension)
+                        }
+                    )
+                    .padding(.horizontal, 20)
+                    .opacity(showContent ? 1 : 0)
+                    .offset(y: showContent ? 0 : 30)
+                    .animation(.easeOut(duration: 0.6).delay(0.2), value: showContent)
+                }
+                
+                // Stats Row
+                StatsRowCompact(
+                    streak: coordinator.userProfile.currentStreak,
+                    totalXP: coordinator.userProfile.totalXP,
+                    weekProgress: weekProgress
+                )
+                .padding(.horizontal, 20)
+                .opacity(showContent ? 1 : 0)
+                .offset(y: showContent ? 0 : 20)
+                .animation(.easeOut(duration: 0.6).delay(0.3), value: showContent)
+                
+                // Progress Section
+                ProgressSection(
+                    activities: getActivities()
                 )
                 .padding(.horizontal, 20)
                 .opacity(showContent ? 1 : 0)
                 .offset(y: showContent ? 0 : 30)
-                .animation(.easeOut(duration: 0.6).delay(0.2), value: showContent)
-                
-                // Activities Grid
-                ActivitiesGrid(
-                    activities: getActivities(),
-                    onActivityTap: { dimension in
-                        coordinator.navigateToActionTimer(dimension: dimension)
-                    }
-                )
-                .padding(.horizontal, 20)
-                .opacity(showContent ? 1 : 0)
-                .offset(y: showContent ? 0 : 40)
-                .animation(.easeOut(duration: 0.6).delay(0.3), value: showContent)
+                .animation(.easeOut(duration: 0.6).delay(0.4), value: showContent)
                 
                 // Motivational Text
                 Text("Tu constancia es lo que realmente transforma tu vida")
@@ -86,7 +95,7 @@ struct HomePage: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
                     .opacity(showContent ? 1 : 0)
-                    .animation(.easeOut(duration: 0.6).delay(0.4), value: showContent)
+                    .animation(.easeOut(duration: 0.6).delay(0.5), value: showContent)
                 
                 Spacer(minLength: 100)
             }
