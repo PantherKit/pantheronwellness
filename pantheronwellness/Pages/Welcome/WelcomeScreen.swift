@@ -11,7 +11,10 @@ struct WelcomeScreen: View {
     @State private var showOnboardingContent = false
     @State private var showExplanation = false
     @State private var showDimensionGrid = false
+    @State private var showConfirmation = false
     @State private var isLottieActive = true
+    @State private var currentCarouselIndex: Int = 0
+    @State private var scrollOffset: CGFloat = 0
     @Namespace private var animationNamespace
     @Environment(\.appTheme) var theme
     
@@ -124,9 +127,12 @@ struct WelcomeScreen: View {
                 } else if !showExplanation {
                     // Explanation Step
                     explanationSection(geometry: geometry)
-                } else {
+                } else if !showConfirmation {
                     // Onboarding Dimension Selection Integrated
                     dimensionSelectionSection(geometry: geometry)
+                } else {
+                    // Confirmation Section
+                    confirmationSection(geometry: geometry)
                 }
                 
                 Spacer(minLength: 40)
@@ -353,6 +359,13 @@ struct WelcomeScreen: View {
         }
     }
     
+    private func showConfirmationView() {
+        // Fade out carousel y mostrar confirmation
+        withAnimation(.easeInOut(duration: 0.6)) {
+            showConfirmation = true
+        }
+    }
+    
     // MARK: - Wave Animation Control
     private func startWaveAnimation() {
         let duration = isTransitioning ? 8.4 : 6.0 // 40% más lenta durante transición
@@ -364,7 +377,7 @@ struct WelcomeScreen: View {
         }
     }
     
-    // MARK: - Dimension Selection Section (Onboarding Integrated)
+    // MARK: - Dimension Selection Section (Carousel Curveado)
     private func dimensionSelectionSection(geometry: GeometryProxy) -> some View {
         VStack(spacing: 0) {
             // Fixed Header Section
@@ -408,7 +421,7 @@ struct WelcomeScreen: View {
                             value: showDimensionGrid
                         )
                     
-                    Text("Selecciona 2 o 3 dimensiones.\nDiseñaremos tu journey personalizado.")
+                    Text("Selecciona 2 o 3 dimensiones.\nDesliza para explorar.")
                         .font(.manrope(16, weight: .regular))
                         .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.7))
                         .multilineTextAlignment(.center)
@@ -421,88 +434,277 @@ struct WelcomeScreen: View {
                         )
                 }
             }
-            .padding(.bottom, 20)
+            .padding(.bottom, 30)
             
-            // Scrollable Grid Section
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 16) {
-                    // Dimension Grid (2x4 layout)
-                    LazyVGrid(
-                        columns: [
-                            GridItem(.flexible(), spacing: 12),
-                            GridItem(.flexible(), spacing: 12)
-                        ],
-                        spacing: 12
-                    ) {
-                        ForEach(Array(WellnessDimension.allCases.enumerated()), id: \.element) { index, dimension in
+            // Curved Carousel Section
+            carouselView(geometry: geometry)
+                .frame(height: 280)
+                .padding(.bottom, 30)
+            
+            // Continue Button
+            VStack(spacing: 12) {
+                Button(action: {
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                    impactFeedback.impactOccurred()
+                    showConfirmationView()
+                }) {
+                    Text(buttonTitle)
+                        .font(.manrope(16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 16)
+                        .background(
+                            Capsule()
+                                .fill(coordinator.hasMinimumDimensionsSelected() ? theme.colors.welcomeTextPrimary : theme.colors.welcomeTextPrimary.opacity(0.5))
+                                .shadow(
+                                    color: theme.colors.welcomeTextPrimary.opacity(0.3),
+                                    radius: 16,
+                                    y: 6
+                                )
+                        )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .frame(width: geometry.size.width * 0.65)
+                .disabled(!coordinator.hasMinimumDimensionsSelected())
+                .opacity(showDimensionGrid ? 1 : 0)
+                .scaleEffect(showDimensionGrid ? 1.0 : 0.9)
+                .animation(
+                    .spring(response: 0.7, dampingFraction: 0.75).delay(1.2),
+                    value: showDimensionGrid
+                )
+                
+                // Subtle hint text
+                Text("Puedes cambiar esto después")
+                    .font(.manrope(12, weight: .regular))
+                    .foregroundColor(theme.colors.welcomeTextMuted.opacity(0.7))
+                    .opacity(showDimensionGrid ? 1 : 0)
+                    .animation(
+                        .easeOut(duration: 0.6).delay(1.4),
+                        value: showDimensionGrid
+                    )
+            }
+        }
+    }
+    
+    // MARK: - Curved Carousel View
+    private func carouselView(geometry: GeometryProxy) -> some View {
+        // Card width optimizado a 50% para fit perfecto de 3 cards
+        let cardWidth: CGFloat = geometry.size.width * 0.5
+        let cardHeight: CGFloat = 240
+        // Spacing mínimo para compacidad
+        let spacing: CGFloat = 8
+        // Spacer para centrar primera/última card
+        let sideSpacing: CGFloat = (geometry.size.width - cardWidth) / 2
+        
+        return ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: spacing) {
+                    // Leading spacer para centrar primera card
+                    Spacer()
+                        .frame(width: sideSpacing)
+                    
+                    ForEach(Array(WellnessDimension.allCases.enumerated()), id: \.element) { index, dimension in
+                        GeometryReader { cardGeo in
+                            let minX = cardGeo.frame(in: .global).minX
+                            let screenWidth = geometry.size.width
+                            let centerX = screenWidth / 2
+                            let cardCenterX = minX + (cardWidth / 2)
+                            let distance = cardCenterX - centerX
+                            
+                            // Transformaciones 3D pronunciadas
+                            let rotation = Double(distance / screenWidth) * 35  // ±35° rotación
+                            let scale = max(0.7, 1.0 - abs(distance / screenWidth) * 0.3)
+                            let yOffset = abs(distance / screenWidth) * 40  // Curvatura pronunciada
+                            let opacity = max(0.5, 1.0 - abs(distance / screenWidth) * 0.5)  // Mejor visibilidad lateral
+                            
                             IdentityCard(
                                 dimension: dimension,
                                 identity: nil,
                                 isSelected: coordinator.selectedFocusDimensions.contains(dimension),
                                 namespace: animationNamespace,
                                 onTap: {
-                                    coordinator.toggleFocusDimension(dimension)
+                                    // Scroll to center + toggle selection
+                                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                                        proxy.scrollTo(dimension, anchor: .center)
+                                    }
+                                    
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        coordinator.toggleFocusDimension(dimension)
+                                    }
                                 },
                                 style: .compact,
                                 overrideColor: theme.colors.welcomeTextPrimary
                             )
+                            .frame(width: cardWidth, height: cardHeight)
+                            .rotation3DEffect(
+                                .degrees(rotation),
+                                axis: (x: 0, y: 1, z: 0),
+                                perspective: 0.5
+                            )
+                            .scaleEffect(scale)
+                            .offset(y: yOffset)
+                            .opacity(opacity)
                             .opacity(showDimensionGrid ? 1 : 0)
-                            .offset(y: showDimensionGrid ? 0 : 30)
                             .animation(
                                 .timingCurve(0.4, 0.0, 0.2, 1, duration: 0.5)
                                 .delay(0.6 + Double(index) * 0.08),
                                 value: showDimensionGrid
                             )
                         }
+                        .frame(width: cardWidth, height: cardHeight)
+                        .id(dimension)
                     }
-                    .padding(.horizontal, 8)
                     
-                    // Continue Button
-                    VStack(spacing: 12) {
-                        Button(action: {
-                            let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                            impactFeedback.impactOccurred()
-                            coordinator.completeFocusSelection()
-                        }) {
-                            Text(buttonTitle)
-                                .font(.manrope(16, weight: .semibold))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 32)
-                                .padding(.vertical, 16)
-                                .background(
-                                    Capsule()
-                                        .fill(coordinator.hasMinimumDimensionsSelected() ? theme.colors.welcomeTextPrimary : theme.colors.welcomeTextPrimary.opacity(0.5))
-                                        .shadow(
-                                            color: theme.colors.welcomeTextPrimary.opacity(0.3),
-                                            radius: 16,
-                                            y: 6
-                                        )
-                                )
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .frame(width: geometry.size.width * 0.65)
-                        .disabled(!coordinator.hasMinimumDimensionsSelected())
-                        .opacity(showDimensionGrid ? 1 : 0)
-                        .scaleEffect(showDimensionGrid ? 1.0 : 0.9)
-                        .animation(
-                            .spring(response: 0.7, dampingFraction: 0.75).delay(1.2),
-                            value: showDimensionGrid
-                        )
-                        
-                        // Subtle hint text
-                        Text("Puedes cambiar esto después")
-                            .font(.manrope(12, weight: .regular))
-                            .foregroundColor(theme.colors.welcomeTextMuted.opacity(0.7))
-                            .opacity(showDimensionGrid ? 1 : 0)
-                            .animation(
-                                .easeOut(duration: 0.6).delay(1.4),
-                                value: showDimensionGrid
-                            )
-                    }
-                    .padding(.top, 8)
-                    .padding(.bottom, 20)
+                    // Trailing spacer para centrar última card
+                    Spacer()
+                        .frame(width: sideSpacing)
                 }
             }
+            .frame(maxWidth: .infinity)
+            .onAppear {
+                // Centrar en la primera card al aparecer
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) {
+                        proxy.scrollTo(WellnessDimension.allCases.first, anchor: .center)
+                    }
+                }
+            }
+        }
+    }
+    
+    // MARK: - Confirmation Section
+    private func confirmationSection(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 32) {
+            // Success Icon
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            gradient: Gradient(colors: [
+                                Color(hex: 0xB6E2D3).opacity(0.3),
+                                Color(hex: 0x1A5A53).opacity(0.1)
+                            ]),
+                            center: .center,
+                            startRadius: 30,
+                            endRadius: 60
+                        )
+                    )
+                    .frame(width: 100, height: 100)
+                
+                Image(systemName: "checkmark")
+                    .font(.system(size: 40, weight: .semibold))
+                    .foregroundColor(Color(hex: 0x1A5A53))
+            }
+            .scaleEffect(showConfirmation ? 1 : 0.5)
+            .animation(
+                .spring(response: 0.8, dampingFraction: 0.6),
+                value: showConfirmation
+            )
+            
+            // Title
+            VStack(spacing: 16) {
+                Text("Perfecto, vamos a\nenfocarnos en:")
+                    .font(.manrope(28, weight: .bold))
+                    .foregroundColor(theme.colors.welcomeTextPrimary)
+                    .multilineTextAlignment(.center)
+                    .opacity(showConfirmation ? 1 : 0)
+                    .offset(y: showConfirmation ? 0 : 20)
+                    .animation(
+                        .easeOut(duration: 0.6).delay(0.3),
+                        value: showConfirmation
+                    )
+                
+                // Dimension Chips
+                VStack(spacing: 12) {
+                    ForEach(Array(coordinator.selectedFocusDimensions.enumerated()), id: \.element) { index, dimension in
+                        DimensionChip(dimension: dimension)
+                            .opacity(showConfirmation ? 1 : 0)
+                            .offset(x: showConfirmation ? 0 : -30)
+                            .animation(
+                                .easeOut(duration: 0.5).delay(0.5 + Double(index) * 0.1),
+                                value: showConfirmation
+                            )
+                    }
+                }
+                .padding(.vertical, 8)
+                
+                Text("Tu journey personalizado está listo")
+                    .font(.manrope(16, weight: .regular))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .opacity(showConfirmation ? 1 : 0)
+                    .offset(y: showConfirmation ? 0 : 20)
+                    .animation(
+                        .easeOut(duration: 0.6).delay(0.8),
+                        value: showConfirmation
+                    )
+            }
+            
+            Spacer(minLength: 20)
+            
+            // CTA Button
+            Button(action: {
+                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                impactFeedback.impactOccurred()
+                coordinator.completeFocusSelection()
+            }) {
+                Text("Comenzar mi viaje")
+                    .font(.manrope(16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 16)
+                    .background(
+                        Capsule()
+                            .fill(theme.colors.welcomeTextPrimary)
+                            .shadow(
+                                color: theme.colors.welcomeTextPrimary.opacity(0.3),
+                                radius: 16,
+                                y: 6
+                            )
+                    )
+            }
+            .buttonStyle(PlainButtonStyle())
+            .frame(width: geometry.size.width * 0.65)
+            .opacity(showConfirmation ? 1 : 0)
+            .offset(y: showConfirmation ? 0 : 30)
+            .animation(
+                .spring(response: 0.7, dampingFraction: 0.75).delay(1.0),
+                value: showConfirmation
+            )
+        }
+    }
+    
+    // MARK: - Dimension Chip Component
+    private struct DimensionChip: View {
+        let dimension: WellnessDimension
+        @Environment(\.appTheme) var theme
+        
+        var body: some View {
+            HStack(spacing: 12) {
+                Image(systemName: dimension.iconName)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(Color(hex: 0x1A5A53))
+                
+                Text(dimension.displayName)
+                    .font(.manrope(16, weight: .semibold))
+                    .foregroundColor(Color(hex: 0x1A5A53))
+                
+                Spacer()
+                
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(Color(hex: 0x1A5A53))
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(hex: 0xB6E2D3).opacity(0.15))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(Color(hex: 0x1A5A53).opacity(0.2), lineWidth: 1)
+                    )
+            )
         }
     }
     
