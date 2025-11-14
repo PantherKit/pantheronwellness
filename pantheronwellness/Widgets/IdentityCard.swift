@@ -14,6 +14,7 @@ struct IdentityCard: View {
     let isRecommended: Bool
     let recommendationPriority: Int?
     let style: IdentityCardStyle
+    let overrideColor: Color?
     
     @State private var isPressed = false
     @State private var isHovered = false
@@ -26,7 +27,8 @@ struct IdentityCard: View {
          onTap: @escaping () -> Void,
          isRecommended: Bool = false,
          recommendationPriority: Int? = nil,
-         style: IdentityCardStyle = .full) {
+         style: IdentityCardStyle = .full,
+         overrideColor: Color? = nil) {
         self.dimension = dimension
         self.identity = identity
         self.isSelected = isSelected
@@ -35,6 +37,7 @@ struct IdentityCard: View {
         self.isRecommended = isRecommended
         self.recommendationPriority = recommendationPriority
         self.style = style
+        self.overrideColor = overrideColor
     }
     
     var body: some View {
@@ -102,7 +105,7 @@ struct IdentityCard: View {
             if isSelected {
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 24, weight: .semibold))
-                    .foregroundColor(dimension.primaryColor)
+                    .foregroundColor(effectiveColor)
                     .background(
                         Circle()
                             .fill(Color.white)
@@ -215,20 +218,24 @@ struct IdentityCard: View {
         return dimension.identityStatement
     }
     
+    private var effectiveColor: Color {
+        return overrideColor ?? dimension.primaryColor
+    }
+    
     private var cardBackground: Color {
         if style == .compact {
             // Minimalista para onboarding
             if isSelected {
-                return dimension.primaryColor.opacity(0.08)
+                return effectiveColor.opacity(0.08)
             } else {
                 return Color.white
             }
         } else {
             // Original para full card
             if isSelected {
-                return dimension.primaryColor.opacity(0.15)
+                return effectiveColor.opacity(0.15)
             } else if isRecommended {
-                return dimension.primaryColor.opacity(0.05)
+                return effectiveColor.opacity(0.05)
             } else if isPressed {
                 return theme.colors.surface.opacity(0.8)
             } else {
@@ -239,22 +246,22 @@ struct IdentityCard: View {
     
     private var iconColor: Color {
         if style == .compact {
-            return isSelected ? dimension.primaryColor : Color.secondary
+            return isSelected ? effectiveColor : Color.secondary
         } else {
-            return isSelected ? dimension.primaryColor : theme.colors.onSurface.opacity(0.8)
+            return isSelected ? effectiveColor : theme.colors.onSurface.opacity(0.8)
         }
     }
     
     private var borderColor: Color {
         if style == .compact {
             // Minimalista: solo borde cuando está seleccionado
-            return isSelected ? dimension.primaryColor : Color.clear
+            return isSelected ? effectiveColor : Color.clear
         } else {
             // Original para full card
             if isSelected {
-                return dimension.primaryColor
+                return effectiveColor
             } else if isRecommended {
-                return dimension.primaryColor.opacity(0.4)
+                return effectiveColor.opacity(0.4)
             } else if isHovered {
                 return theme.colors.outline.opacity(0.5)
             } else {
@@ -273,10 +280,10 @@ struct IdentityCard: View {
     
     private var shadowColor: Color {
         if style == .compact {
-            return isSelected ? dimension.primaryColor.opacity(0.2) : Color.black.opacity(0.04)
+            return isSelected ? effectiveColor.opacity(0.2) : Color.black.opacity(0.04)
         } else {
             if isSelected {
-                return dimension.primaryColor.opacity(0.3)
+                return effectiveColor.opacity(0.3)
             } else {
                 return Color.black.opacity(0.1)
             }
