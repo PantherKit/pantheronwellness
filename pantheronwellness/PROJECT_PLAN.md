@@ -1,7 +1,7 @@
 # 🌟 Pantheron Wellness - Plan de Desarrollo
 
 > **Duolingo para Wellness 2.0**
-> 
+>
 > Una app de bienestar que instala identidades a través de micro-acciones diarias de 2 minutos, usando gamificación inteligente y personalización basada en las 7 dimensiones del wellness.
 
 ---
@@ -30,6 +30,7 @@ Es una app que responde: _"¿Quién quiero ser hoy?"_ y te da **una sola acción
 ### Wellness 2.0
 
 Las apps de wellness actuales fallan porque:
+
 - Dan datos → pero no cambian comportamiento
 - Dan métricas → pero no cambian identidad
 - Dan listas de tareas → pero no cambian autoimagen
@@ -101,7 +102,10 @@ pantheronwellness/
 │   ├── Home/                            # Componentes del home ✨
 │   │   ├── HomeHeader.swift
 │   │   ├── ActionHeroCard.swift
+│   │   ├── PrimaryActionCard.swift      # ✨ NEW: Single primary action
 │   │   ├── StatsRow.swift
+│   │   ├── StatsRowCompact.swift        # ✨ NEW: Compact stats (3 cards)
+│   │   ├── ProgressSection.swift        # ✨ NEW: Always visible progress
 │   │   ├── JourneyProgressSection.swift
 │   │   └── DailyChallengeCard.swift
 │   ├── TabBar/
@@ -116,6 +120,9 @@ pantheronwellness/
 │   │   ├── AppColors.swift
 │   │   ├── AppTypography.swift
 │   │   └── Color+Hex.swift
+│   ├── Animations/                      # ✨ NEW: Lottie animations
+│   │   ├── relaxingAnimation.json       # PrimaryActionCard background
+│   │   └── calmCircleAnimation.json     # ActionTimerView background
 │   └── API/
 │       └── UserDataService.swift
 │
@@ -127,13 +134,14 @@ pantheronwellness/
 ### Modelos de Datos Clave
 
 #### UserProfile
+
 ```swift
 struct UserProfile: Codable {
     var name: String
     let startDate: Date
     var identities: [WellnessDimension: Identity]
     var selectedWellnessFocus: [WellnessDimension]  // 2-3 dimensiones elegidas
-    
+
     // Gamificación
     var totalXP: Int
     var currentStreak: Int
@@ -146,11 +154,12 @@ struct UserProfile: Codable {
 ```
 
 #### WellnessDimension
+
 ```swift
 enum WellnessDimension: String, CaseIterable, Codable {
-    case physical, emotional, mental, social, 
+    case physical, emotional, mental, social,
          spiritual, professional, environmental
-    
+
     var identityStatement: String       // "Soy alguien que..."
     var aspirationalCopy: String        // "Más energía y vitalidad"
     var microAction: String             // "Haz 2 min de estiramiento"
@@ -160,6 +169,7 @@ enum WellnessDimension: String, CaseIterable, Codable {
 ```
 
 #### XP & Rewards
+
 ```swift
 enum XPReward: Int {
     case dailyActionComplete = 10
@@ -179,6 +189,7 @@ enum XPReward: Int {
 ### Fase 1: Onboarding & Identity Selection ✅
 
 **Implementado:**
+
 - ✅ WelcomeScreen con hero animation
 - ✅ OnboardingView con selección de 2-3 dimensiones
 - ✅ IdentityCard con modo compact y full
@@ -189,6 +200,7 @@ enum XPReward: Int {
 - ✅ Persistencia de selección en UserProfile
 
 **Características:**
+
 - Grid 2x4 minimalista
 - Animaciones escalonadas (stagger)
 - Checkmark animado en selección
@@ -200,6 +212,7 @@ enum XPReward: Int {
 ### Fase 2: Home Estilo Duolingo ✅
 
 **Implementado:**
+
 - ✅ HomePage completo con scroll
 - ✅ HomeHeader con avatar + streak badge
 - ✅ ActionHeroCard (pendiente/completado)
@@ -210,6 +223,7 @@ enum XPReward: Int {
 - ✅ MainTabView con 3 tabs (Home, Progress, Profile)
 
 **Características destacadas:**
+
 - **Streak Badge prominente** (🔥 como Duolingo)
 - **Hero Card adaptativo**:
   - No completado → muestra acción + CTA "Comenzar"
@@ -220,35 +234,111 @@ enum XPReward: Int {
 
 ---
 
+### Fase 2.5: Home UX Redesign - Single Primary Action ✅
+
+**Problema resuelto:**
+
+- ❌ Antes: Confusión sobre qué hacer, múltiples acciones compitiendo
+- ✅ Después: UNA acción principal super clara, CTA obvio, jerarquía visual perfecta
+
+**Componentes creados:**
+
+1. **PrimaryActionCard.swift**:
+
+   - Badge "Tu acción de hoy" (naranja, sin icono)
+   - Lottie animation (relaxingAnimation.json, 220x160, aligned leading)
+   - Dimension tag en esquina superior derecha
+   - Identity statement + micro-action (leading alignment)
+   - CTA "Comenzar ahora →" con dimension.primaryColor
+   - Gradient background adaptado a cada dimensión
+   - Fade-out gradient hacia blanco (bottom)
+   - Corner radius 28pt, shadow suave
+   - Press animation (scale 0.97)
+
+2. **StatsRowCompact.swift**:
+
+   - 3 stat cards horizontales (Streak, XP, Week)
+   - Image backgrounds: RedBG, YellowBG, GreenBG
+   - Fade-out gradient overlay (55% → 95% white)
+   - Corner radius 16pt
+   - Compact design
+
+3. **ProgressSection.swift**:
+   - Title "Tu progreso esta semana"
+   - Progress cards por dimensión
+   - Siempre visible (no colapsable)
+   - Días activos tracking
+
+**Jerarquía Visual:**
+
+- **Nivel 1**: PrimaryActionCard domina (CTA verde, grande, obvio)
+- **Nivel 2**: StatsRow con gamificación visible
+- **Nivel 3**: Progress Section siempre accesible
+
+**Wording mejorado:**
+
+- "Tu acción de hoy" (claro, directo)
+- "Soy alguien que..." (refuerza identidad)
+- "Comenzar ahora" (verbo de acción + urgencia)
+
+**Resultado UX:**
+
+- ✅ Usuario sabe exactamente qué hacer
+- ✅ CTA super claro y obvio
+- ✅ Jerarquía visual perfecta
+- ✅ Cero fricción, cero confusión
+- ✅ UX nivel Duolingo
+
+---
+
 ### Fase 3: Action Flow Completo ✅
 
 **Implementado:**
+
 - ✅ ActionTimerView con timer circular
 - ✅ Checklist interactivo (3-4 pasos por dimensión)
-- ✅ Botones play/pause/complete
+- ✅ Botones play/pause/complete con estados dinámicos
 - ✅ Validación: timer + checklist completos
 - ✅ FeedbackCompletionView con confetti
 - ✅ Animación de celebración
 - ✅ Display de XP ganados (base + bonuses)
 - ✅ Display de streak actual
 - ✅ Haptic feedback
+- ✅ Lottie animation background (calmCircleAnimation.json)
+- ✅ Title multilínea sin cortes
+- ✅ Botón CTA con coherencia visual (overlay oscuro + shadow)
 
 **Flujo:**
+
 ```
-Home → Tap "Comenzar" 
+Home → Tap "Comenzar"
   ↓
-ActionTimer (2 min) 
+ActionTimer (2 min)
   ↓ Timer completo + checklist ✓
 FeedbackCompletion (confetti 🎉)
   ↓
 Home (actualizado)
 ```
 
+**Características UX:**
+
+- **Title adaptativo**: Font title1, multilínea con fixedSize, nunca se corta
+- **Botón Comenzar/Reanudar**:
+  - Estado inicial: "Comenzar"
+  - Después de pausar: "Reanudar"
+  - Con arrow icon y press animation (scale 0.97)
+- **Botón con overlay oscuro**:
+  - ZStack con dimension.primaryColor + black overlay (25%)
+  - Shadow negro (15% opacity) para mejor visibilidad
+  - Funciona perfecto con colores pasteles
+- **Lottie background**: calmCircleAnimation.json (280x280, 10% opacity)
+
 ---
 
 ### Fase 4: Sistema de Gamificación ✅
 
 **Implementado:**
+
 - ✅ Sistema de XP con múltiples fuentes
 - ✅ Sistema de niveles (4 niveles)
 - ✅ Sistema de streaks con cálculo automático
@@ -267,6 +357,7 @@ Home (actualizado)
 | 4 | Maestro | 1500+ | ⭐ |
 
 **Daily Challenges:**
+
 - ✅ Completa antes de las 8pm (+20 XP)
 - ✅ Completa 2 dimensiones hoy (+30 XP)
 - ✅ Mantén tu racha (+20 XP)
@@ -280,14 +371,14 @@ Home (actualizado)
 ```swift
 func completeAction(for dimension: WellnessDimension) {
     var xpEarned = 10  // Base
-    
+
     // Bonuses
     if isSecondActionToday { xpEarned += 15 }
     if streak == 5 { xpEarned += 20 }
     if streak == 7 { xpEarned += 50 }
     if streak == 14 { xpEarned += 100 }
     if dailyChallengeCompleted { xpEarned += 20-30 }
-    
+
     totalXP += xpEarned
 }
 ```
@@ -297,7 +388,7 @@ func completeAction(for dimension: WellnessDimension) {
 ```swift
 func updateStreak() {
     let daysDifference = lastActionDate vs today
-    
+
     if daysDifference == 0:
         // Ya completó hoy, no cambiar
     else if daysDifference == 1:
@@ -313,13 +404,13 @@ func updateStreak() {
 func getSuggestedDimensionForToday() -> WellnessDimension? {
     // 1. Filtrar las que ya completó hoy
     let available = selectedFocus.filter { !completedToday.contains($0) }
-    
+
     // 2. Si ya completó todas, retornar cualquiera (para bonus)
     guard !available.isEmpty else { return selectedFocus.first }
-    
+
     // 3. Sugerir la que tenga menos evidencias recientes
-    return available.sorted { 
-        identities[$0].evidenceCount < identities[$1].evidenceCount 
+    return available.sorted {
+        identities[$0].evidenceCount < identities[$1].evidenceCount
     }.first
 }
 ```
@@ -334,18 +425,18 @@ func getSuggestedDimensionForToday() -> WellnessDimension? {
 1. WelcomeScreen
    "Instala tu próxima versión"
    [Comenzar]
-   
+
 2. OnboardingView
    "¿Qué áreas de tu bienestar quieres mejorar?"
    [Grid 2x4 con 7 dimensiones]
    Selecciona 2-3
    [Continuar (2/3)]
-   
+
 3. ConfirmationView
    "Perfecto, vamos a enfocarnos en:"
    [Chips: Mental, Física, Emocional]
    [Comenzar mi viaje]
-   
+
 4. MainTabView → HomePage
    Header: Hola Usuario | 🔥 0
    Hero Card: "Soy alguien que construye mi calma"
@@ -359,17 +450,17 @@ func getSuggestedDimensionForToday() -> WellnessDimension? {
 1. Abrir app
    → Home muestra dimensión sugerida del día
    → Si ya completó: muestra celebración
-   
+
 2. Tap "Comenzar"
    → ActionTimerView
    → Timer 2:00 + checklist
-   
+
 3. Completar timer + checklist
    → FeedbackCompletionView
    → Confetti 🎉
    → "+25 XP" (10 base + 15 streak bonus)
    → "🔥 8 días"
-   
+
 4. [Continuar]
    → Home actualizado
    → Stats refrescadas
@@ -384,7 +475,7 @@ func getSuggestedDimensionForToday() -> WellnessDimension? {
    → Resetea todaysDimensionCompleted
    → Genera nuevo daily challenge
    → Verifica streak (consecutivo o roto)
-   
+
 2. Home muestra nueva dimensión sugerida
    (automáticamente la que tenga menos evidencias)
 ```
@@ -409,12 +500,14 @@ func getSuggestedDimensionForToday() -> WellnessDimension? {
 ### 🚧 Post-MVP (Iteraciones Futuras)
 
 #### Fase 5: Notificaciones Push
+
 - [ ] Recordatorio diario (hora personalizable)
 - [ ] Notificación de streak en riesgo
 - [ ] Celebración de milestones (5, 7, 14 días)
 - [ ] Daily challenge reminder
 
 #### Fase 6: Progress Tab Completo
+
 - [ ] Calendario con días completados
 - [ ] Gráficas de progreso por dimensión
 - [ ] Insights semanales/mensuales
@@ -422,24 +515,28 @@ func getSuggestedDimensionForToday() -> WellnessDimension? {
 - [ ] Comparación vs semanas anteriores
 
 #### Fase 7: Social Features
+
 - [ ] Ver friends' streaks (leaderboard)
 - [ ] Compartir achievements
 - [ ] Challenges grupales
 - [ ] Motivación entre amigos
 
 #### Fase 8: Personalización Avanzada
+
 - [ ] IA para generar micro-acciones personalizadas
 - [ ] Adaptive difficulty basado en completions
 - [ ] Cambiar dimensiones focus
 - [ ] Crear micro-acciones custom
 
 #### Fase 9: Wellness Journal
+
 - [ ] Reflexiones post-acción
 - [ ] Estado emocional tracking
 - [ ] Notas por dimensión
 - [ ] Export de datos
 
 #### Fase 10: Premium Features
+
 - [ ] Animaciones Rive custom
 - [ ] Sonidos ambientales
 - [ ] Guided meditations
@@ -453,6 +550,7 @@ func getSuggestedDimensionForToday() -> WellnessDimension? {
 ### Paleta de Colores
 
 **Background:**
+
 - Primary: `#F4ECE3` (crema cálido)
 - Surface: `#FFFFFF` (blanco)
 
@@ -468,6 +566,7 @@ func getSuggestedDimensionForToday() -> WellnessDimension? {
 | Environmental | Verde lima | `#A8C686` |
 
 **Gamificación:**
+
 - Streak: Orange `#FF9500`
 - XP: Yellow `#FFD60A`
 - Level: Purple `#BF5AF2`
@@ -491,11 +590,13 @@ Button: 16pt Semibold     // Botones
 ### Animaciones
 
 **Timing Curves:**
+
 - Principal: `cubic-bezier(0.4, 0.0, 0.2, 1)` - 0.35s
 - Spring: `response: 0.6, dampingFraction: 0.7`
 - Stagger delay: `0.08s` entre elementos
 
 **Estados:**
+
 - Entrada: fade + slide from bottom (20pt)
 - Selección: scale 1.0 → 1.03 + shadow expand
 - Transición: matched geometry + directional slide
@@ -523,17 +624,20 @@ Heavy:  color: primary.opacity(0.3), radius: 12, y: 6
 ## 📊 Métricas de Éxito (Post-Launch)
 
 ### Engagement
+
 - **DAU (Daily Active Users)**: % de usuarios que abren la app diariamente
 - **Completion Rate**: % de acciones completadas vs iniciadas
 - **Avg Streak**: Promedio de días consecutivos
 - **Return Rate D7**: % que regresa después de 7 días
 
 ### Wellness Impact
+
 - **Dimensions Balanced**: % de usuarios que completan las 3 dimensiones semanalmente
 - **21-Day Completion**: % que completa una dimensión por 21 días (hábito formado)
 - **Self-Reported Wellness**: Score de bienestar auto-reportado (1-10)
 
 ### Growth
+
 - **Viral Coefficient**: Invitaciones por usuario
 - **App Store Rating**: Target 4.5+
 - **NPS (Net Promoter Score)**: Target 40+
@@ -543,6 +647,7 @@ Heavy:  color: primary.opacity(0.3), radius: 12, y: 6
 ## 🛠️ Comandos Útiles
 
 ### Desarrollo
+
 ```bash
 # Abrir proyecto
 open pantheronwellness.xcodeproj
@@ -558,6 +663,7 @@ cmd + R
 ```
 
 ### Testing
+
 ```bash
 # Limpiar UserDefaults (en debug)
 UserDefaults.standard.removeObject(forKey: "user_profile")
@@ -628,27 +734,29 @@ enum AppView: Equatable {
 ### Cálculos Importantes
 
 **Weekly Goal:**
+
 ```swift
 var weeklyGoalProgress: Double {
     let weekStart = calendar.startOfWeek
-    let completedThisWeek = dailyProgressHistory.filter { 
-        $0.date >= weekStart 
+    let completedThisWeek = dailyProgressHistory.filter {
+        $0.date >= weekStart
     }
     return Double(completedThisWeek.count) / 7.0
 }
 ```
 
 **Progress to Next Level:**
+
 ```swift
 func progressToNext(currentXP: Int) -> Double {
     switch level {
-    case .beginner: 
+    case .beginner:
         return Double(currentXP) / 100.0
-    case .building: 
+    case .building:
         return Double(currentXP - 100) / 400.0
-    case .committed: 
+    case .committed:
         return Double(currentXP - 500) / 1000.0
-    case .master: 
+    case .master:
         return 1.0
     }
 }
@@ -659,16 +767,19 @@ func progressToNext(currentXP: Int) -> Double {
 ## 🎯 Vision a Largo Plazo
 
 ### Año 1: Establecer Hábitos
+
 - 10K usuarios activos
 - Avg streak: 7+ días
 - 50% completion rate de acciones
 
 ### Año 2: Comunidad & Social
+
 - 100K usuarios
 - Features sociales completas
 - Integración con Apple Health
 
 ### Año 3: AI Personalización
+
 - 500K usuarios
 - IA generativa de micro-acciones
 - Integración con wearables
@@ -679,17 +790,20 @@ func progressToNext(currentXP: Int) -> Double {
 ## 📚 Referencias
 
 ### Inspiraciones de Producto
+
 - **Duolingo**: Gamificación, streaks, simple daily action
 - **Opal**: Onboarding research, honest questions
 - **Finch**: Emotional feedback, soft rewards
 - **Headspace**: Wellness tracking, guided actions
 
 ### Framework de Wellness
+
 - Wellness 2.0: identidad → acción → evidencia
 - Atomic Habits (James Clear): micro-acciones de 2 min
 - 7 Dimensiones del Wellness (modelo estándar)
 
 ### Diseño
+
 - Family Wallet: Matched geometry, fluid transitions
 - Material Design 3: Animation timing curves
 - iOS HIG: Native patterns, haptics
@@ -710,5 +824,13 @@ Wellness 2.0 - Cambiando identidades, no solo métricas.
 ---
 
 **Última actualización:** Noviembre 2024  
-**Versión:** MVP 1.0 - Hackathon Ready 🚀
+**Versión:** MVP 1.1 - UX Refinements Complete 🚀
 
+**Cambios recientes (v1.1):**
+
+- ✅ Home UX Redesign: Single Primary Action approach
+- ✅ PrimaryActionCard con Lottie animations
+- ✅ StatsRowCompact con image backgrounds
+- ✅ ActionTimerView mejorado (title multilínea, botones dinámicos, overlay oscuro)
+- ✅ Lottie backgrounds en timer (calmCircleAnimation.json)
+- ✅ Coherencia visual total entre Home y Action views
