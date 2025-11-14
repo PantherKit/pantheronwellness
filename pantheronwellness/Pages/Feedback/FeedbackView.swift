@@ -54,7 +54,7 @@ struct FeedbackView: View {
                         
                         // Feedback text
                         VStack(spacing: 20) {
-                            Text("Hoy actuaste como alguien que...")
+                            Text("Hoy acumulaste evidencia de que...")
                                 .font(theme.typography.title2)
                                 .foregroundColor(theme.colors.onBackground.opacity(0.8))
                                 .multilineTextAlignment(.center)
@@ -77,7 +77,7 @@ struct FeedbackView: View {
                                     value: showContent
                                 )
                             
-                            Text("Un comportamiento a la vez instala tu nueva identidad.")
+                            Text("Ya son \(identity?.evidenceCount ?? 0) evidencias instalando tu identidad.")
                                 .font(theme.typography.body1)
                                 .foregroundColor(theme.colors.onBackground.opacity(0.7))
                                 .multilineTextAlignment(.center)
@@ -91,52 +91,14 @@ struct FeedbackView: View {
                         }
                         
                         // Progress indicator
-                        if let progress = coordinator.identityProgress[dimension] {
-                            VStack(spacing: 12) {
-                                HStack(spacing: 16) {
-                                    // Streak indicator
-                                    VStack(spacing: 4) {
-                                        Text("\(progress.currentStreak)")
-                                            .font(theme.typography.title1)
-                                            .foregroundColor(dimension.primaryColor)
-                                        
-                                        Text("días seguidos")
-                                            .font(theme.typography.caption)
-                                            .foregroundColor(theme.colors.onBackground.opacity(0.6))
-                                    }
-                                    
-                                    Divider()
-                                        .frame(height: 40)
-                                    
-                                    // Total completions
-                                    VStack(spacing: 4) {
-                                        Text("\(progress.totalCompletions)")
-                                            .font(theme.typography.title1)
-                                            .foregroundColor(dimension.primaryColor)
-                                        
-                                        Text("veces total")
-                                            .font(theme.typography.caption)
-                                            .foregroundColor(theme.colors.onBackground.opacity(0.6))
-                                    }
-                                }
-                                .padding(20)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(theme.colors.surface)
-                                        .shadow(
-                                            color: dimension.primaryColor.opacity(0.1),
-                                            radius: 10,
-                                            x: 0,
-                                            y: 5
-                                        )
-                                )
+                        if let identity {
+                            identitySummary(identity: identity)
                                 .opacity(showContent ? 1 : 0)
                                 .scaleEffect(showContent ? 1 : 0.9)
                                 .animation(
                                     .timingCurve(0.4, 0.0, 0.2, 1, duration: 0.6).delay(1.0), 
                                     value: showContent
                                 )
-                            }
                         }
                     }
                     
@@ -145,15 +107,15 @@ struct FeedbackView: View {
                     // Action buttons
                     VStack(spacing: 16) {
                         AnimatedButton(
-                            title: "Ver mi progreso",
+                            title: "Ver identidad en evolución",
                             action: {
                                 coordinator.navigateToProgress()
                             },
                             style: .primary
                         )
                         
-                        Button("Elegir otra identidad") {
-                            coordinator.navigateBackToSelection()
+                        Button("Registrar otra evidencia") {
+                            coordinator.navigateBackToDailyCheckIn()
                         }
                         .font(theme.typography.body2)
                         .foregroundColor(theme.colors.onBackground.opacity(0.6))
@@ -179,6 +141,61 @@ struct FeedbackView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 showSparkles = true
             }
+        }
+    }
+
+    // MARK: - Helpers
+    private var identity: Identity? {
+        coordinator.userProfile.identities[dimension]
+    }
+    
+    @ViewBuilder
+    private func identitySummary(identity: Identity) -> some View {
+        VStack(spacing: 16) {
+            Text("\(identity.level.emoji) Identidad \(identity.level.displayName)")
+                .font(theme.typography.caption)
+                .foregroundColor(theme.colors.onBackground.opacity(0.6))
+            
+            HStack(spacing: 16) {
+                evidenceMetric(
+                    title: "Evidencias",
+                    value: "\(identity.evidenceCount)"
+                )
+                
+                Divider()
+                    .frame(height: 40)
+                
+                evidenceMetric(
+                    title: "Racha",
+                    value: "\(identity.currentStreak) días"
+                )
+            }
+            
+            SwiftUI.ProgressView(value: identity.progressToNextLevel)
+                .progressViewStyle(LinearProgressViewStyle(tint: dimension.primaryColor))
+                .padding(.top, 4)
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(theme.colors.surface)
+                .shadow(
+                    color: dimension.primaryColor.opacity(0.1),
+                    radius: 10,
+                    x: 0,
+                    y: 5
+                )
+        )
+    }
+    
+    private func evidenceMetric(title: String, value: String) -> some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(theme.typography.title1)
+                .foregroundColor(dimension.primaryColor)
+            Text(title)
+                .font(theme.typography.caption)
+                .foregroundColor(theme.colors.onBackground.opacity(0.6))
         }
     }
 }

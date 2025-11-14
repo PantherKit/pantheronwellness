@@ -8,10 +8,13 @@
 import SwiftUI
 
 @main
-struct pantheronwellnessApp: App {
+struct PantherOnWellnessApp: App {
+    @StateObject private var coordinator = AppCoordinator()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(coordinator)
         }
     }
 }

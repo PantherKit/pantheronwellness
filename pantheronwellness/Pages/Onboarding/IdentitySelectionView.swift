@@ -34,16 +34,25 @@ struct IdentitySelectionView: View {
                                 value: showContent
                             )
                         
-                        Text("Selecciona una identidad. Cambia cada día si lo deseas.")
-                            .font(theme.typography.body2)
-                            .foregroundColor(theme.colors.onBackground.opacity(0.7))
-                            .multilineTextAlignment(.center)
-                            .opacity(showContent ? 1 : 0)
-                            .offset(y: showContent ? 0 : -20)
-                            .animation(
-                                .timingCurve(0.4, 0.0, 0.2, 1, duration: 0.6).delay(0.3), 
-                                value: showContent
-                            )
+                        Group {
+                            if let assessment = coordinator.currentAssessment {
+                                Text("Basado en tu perfil, te recomendamos estas dimensiones:")
+                                    .font(theme.typography.body2)
+                                    .foregroundColor(theme.colors.onBackground.opacity(0.7))
+                                    .multilineTextAlignment(.center)
+                            } else {
+                                Text("Selecciona una identidad. Cambia cada día si lo deseas.")
+                                    .font(theme.typography.body2)
+                                    .foregroundColor(theme.colors.onBackground.opacity(0.7))
+                                    .multilineTextAlignment(.center)
+                            }
+                        }
+                        .opacity(showContent ? 1 : 0)
+                        .offset(y: showContent ? 0 : -20)
+                        .animation(
+                            .timingCurve(0.4, 0.0, 0.2, 1, duration: 0.6).delay(0.3), 
+                            value: showContent
+                        )
                     }
                     .padding(.horizontal, 32)
                     .padding(.top, 60)
@@ -53,13 +62,20 @@ struct IdentitySelectionView: View {
                     // Identity Grid
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(Array(WellnessDimension.allCases.enumerated()), id: \.element) { index, dimension in
+                            let recommendedDimensions = coordinator.currentAssessment?.recommendedDimensions ?? []
+                            let isRecommended = recommendedDimensions.contains(dimension)
+                            let priority = recommendedDimensions.firstIndex(of: dimension).map { $0 + 1 }
+                            
                             IdentityCard(
                                 dimension: dimension,
+                                identity: coordinator.userProfile.identities[dimension],
                                 isSelected: selectedDimension == dimension,
                                 namespace: animationNamespace,
                                 onTap: {
                                     selectedDimension = dimension
-                                }
+                                },
+                                isRecommended: isRecommended,
+                                recommendationPriority: priority
                             )
                             .opacity(showGrid ? 1 : 0)
                             .offset(y: showGrid ? 0 : 30)
@@ -89,14 +105,14 @@ struct IdentitySelectionView: View {
                         .opacity(selectedDimension != nil ? 1 : 0.5)
                         .animation(.easeInOut(duration: 0.3), value: selectedDimension)
                         
-                        // Progress indicator
-                        if coordinator.totalCompletions > 0 {
+                        // Evidence indicator
+                        if coordinator.totalEvidences > 0 {
                             HStack(spacing: 8) {
                                 Image(systemName: "sparkles")
                                     .font(.caption)
                                     .foregroundColor(theme.colors.secondary)
                                 
-                                Text("\(coordinator.totalCompletions) acciones completadas")
+                                Text("\(coordinator.totalEvidences) evidencias acumuladas")
                                     .font(theme.typography.caption)
                                     .foregroundColor(theme.colors.onBackground.opacity(0.6))
                             }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct IdentityCircle: View {
-    let progress: [WellnessDimension: IdentityProgress]
+    let identities: [WellnessDimension: Identity]
     let selectedDimension: WellnessDimension?
     @State private var animateProgress = false
     @Environment(\.appTheme) var theme
@@ -18,10 +18,10 @@ struct IdentityCircle: View {
             
             // Progress segments
             ForEach(Array(WellnessDimension.allCases.enumerated()), id: \.element) { index, dimension in
-                let dimensionProgress = progress[dimension]
-                let completions = dimensionProgress?.totalCompletions ?? 0
-                let maxCompletions = 10 // Max for visual purposes
-                let progressValue = min(Double(completions) / Double(maxCompletions), 1.0)
+                let identity = identities[dimension]
+                let evidences = identity?.evidenceCount ?? 0
+                let maxEvidences = 21 // Escala para 3 niveles
+                let progressValue = min(Double(evidences) / Double(maxEvidences), 1.0)
                 
                 ProgressSegment(
                     dimension: dimension,
@@ -37,21 +37,25 @@ struct IdentityCircle: View {
             // Center content
             VStack(spacing: 8) {
                 if let selected = selectedDimension,
-                   let selectedProgress = progress[selected] {
+                   let identity = identities[selected] {
                     
                     Image(systemName: selected.iconName)
                         .font(.system(size: 32, weight: .medium))
                         .foregroundColor(selected.primaryColor)
                     
-                    Text("\(selectedProgress.currentStreak)")
+                    Text("\(identity.evidenceCount)")
                         .font(theme.typography.title1)
                         .foregroundColor(selected.primaryColor)
                     
-                    Text("días seguidos")
+                    Text("evidencias acumuladas")
                         .font(theme.typography.caption)
                         .foregroundColor(theme.colors.onBackground.opacity(0.6))
                         .multilineTextAlignment(.center)
                     
+                    Text("Racha: \(identity.currentStreak) días")
+                        .font(theme.typography.overline)
+                        .foregroundColor(theme.colors.onBackground.opacity(0.5))
+                        .multilineTextAlignment(.center)
                 } else {
                     Image(systemName: "sparkles")
                         .font(.system(size: 32, weight: .medium))

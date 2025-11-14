@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var coordinator = AppCoordinator()
-    @Namespace private var animationNamespace
     
     var body: some View {
         ZStack {
@@ -21,8 +20,36 @@ struct ContentView: View {
                         removal: .move(edge: .leading).combined(with: .opacity)
                     ))
                 
+            case .assessmentWelcome:
+                AssessmentWelcomePage(coordinator: coordinator)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                
+            case .assessmentQuestion(let questionIndex):
+                AssessmentQuestionPage(coordinator: coordinator, questionIndex: questionIndex)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                
+            case .assessmentResults:
+                AssessmentResultsPage(coordinator: coordinator)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .move(edge: .top).combined(with: .opacity)
+                    ))
+                
             case .identitySelection:
                 IdentitySelectionView(coordinator: coordinator)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                
+            case .dailyCheckIn:
+                DailyCheckInView(coordinator: coordinator)
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing).combined(with: .opacity),
                         removal: .move(edge: .leading).combined(with: .opacity)
