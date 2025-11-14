@@ -147,11 +147,8 @@ struct WelcomeScreen: View {
                     // Name Input Section
                     nameInputSection(geometry: geometry)
                 } else if !showExplanation {
-                    // Explanation Step
+                    // Explanation + Dimension Grid (Lottie Fijo + Contenido Dinámico)
                     explanationSection(geometry: geometry)
-                } else if !showConfirmation {
-                    // Onboarding Dimension Selection Integrated
-                    dimensionSelectionSection(geometry: geometry)
                 } else {
                     // Confirmation Section
                     confirmationSection(geometry: geometry)
@@ -313,18 +310,16 @@ struct WelcomeScreen: View {
         isLottieActive = false
         startWaveAnimation()
         
-        // Continuar a explanation
+        // Continuar a explanation (sin activar grid automáticamente)
+        // El usuario verá primero el Explanation Content
+        // Luego presionará "Comenzar selección" para ver el Grid
         withAnimation(.easeInOut(duration: 0.6)) {
             showNameInput = true  // Marcar name input como completado
             showExplanation = false  // Mostrar explanation
         }
         
-        // Expandir panel para el grid
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            withAnimation(.spring(response: 1.0, dampingFraction: 0.75)) {
-                showDimensionGrid = true
-            }
-        }
+        // NOTA: showDimensionGrid se activa manualmente con startDimensionSelection()
+        // cuando el usuario presiona "Comenzar selección"
     }
     
     // MARK: - Name Input Section
@@ -668,10 +663,10 @@ struct WelcomeScreen: View {
         }
     }
     
-    // MARK: - Explanation Section
+    // MARK: - Explanation + Dimension Grid Section (Lottie Fijo)
     private func explanationSection(geometry: GeometryProxy) -> some View {
-        VStack(spacing: 32) {
-            // Hero Lottie Animation
+        VStack(spacing: 0) {
+            // LOTTIE FIJO (siempre visible)
             LottieView(animation: .named("calmCircleAnimation"))
                 .playing(loopMode: .loop)
                 .animationSpeed(0.6)
@@ -682,7 +677,27 @@ struct WelcomeScreen: View {
                     value: showOnboardingContent
                 )
             
-            // Explanation Content
+            Spacer().frame(height: 20)
+            
+            // CONTENIDO DINÁMICO (fade in/out)
+            ZStack {
+                if !showDimensionGrid {
+                    // ESTADO 1: Explanation Content
+                    explanationContent(geometry: geometry)
+                        .transition(.opacity)
+                } else {
+                    // ESTADO 2: Dimension Grid Content
+                    dimensionGridContent(geometry: geometry)
+                        .transition(.opacity)
+                }
+            }
+            .animation(.easeInOut(duration: 0.4), value: showDimensionGrid)
+        }
+    }
+    
+    // MARK: - Explanation Content (sin Lottie)
+    private func explanationContent(geometry: GeometryProxy) -> some View {
+        VStack(spacing: 32) {
             VStack(spacing: 20) {
                 Text("¿En qué dimensiones\nquieres enfocarte?")
                     .font(.manrope(32, weight: .bold))
@@ -751,88 +766,33 @@ struct WelcomeScreen: View {
         }
     }
     
-    private func startDimensionSelection() {
-        // Expandir panel a 95% y mostrar grid
-        withAnimation(.spring(response: 1.0, dampingFraction: 0.75)) {
-            showExplanation = true
-            showDimensionGrid = true
-        }
-    }
-    
-    private func showConfirmationView() {
-        // Fade out carousel y mostrar confirmation
-        withAnimation(.easeInOut(duration: 0.6)) {
-            showConfirmation = true
-        }
-    }
-    
-    // MARK: - Wave Animation Control
-    private func startWaveAnimation() {
-        let duration = isTransitioning ? 8.4 : 10.0 // Más lenta en estado inicial: 6.0 → 10.0
-        withAnimation(
-            .linear(duration: duration)
-            .repeatForever(autoreverses: false)
-        ) {
-            wavePhase = .pi * 2 // Un ciclo completo
-        }
-    }
-    
-    // MARK: - Dimension Selection Section (Carousel Curveado)
-    private func dimensionSelectionSection(geometry: GeometryProxy) -> some View {
+    // MARK: - Dimension Grid Content (sin Lottie)
+    private func dimensionGridContent(geometry: GeometryProxy) -> some View {
         VStack(spacing: 0) {
-            // Fixed Header Section
-            VStack(spacing: 20) {
-                // Hero Icon Animation
-                ZStack {
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                gradient: Gradient(colors: [
-                                    Color(hex: 0xB6E2D3).opacity(0.3),
-                                    Color(hex: 0x1A5A53).opacity(0.1)
-                                ]),
-                                center: .center,
-                                startRadius: 30,
-                                endRadius: 60
-                            )
-                        )
-                        .frame(width: 80, height: 80)
-                    
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 32, weight: .light))
-                        .foregroundColor(Color(hex: 0x1A5A53))
-                }
-                .scaleEffect(showDimensionGrid ? 1 : 0.5)
-                .animation(
-                    .spring(response: 1.0, dampingFraction: 0.6),
-                    value: showDimensionGrid
-                )
+            // Title and subtitle
+            VStack(spacing: 12) {
+                Text("¿Qué áreas de tu bienestar\nquieres mejorar?")
+                    .font(.manrope(28, weight: .bold))
+                    .foregroundColor(theme.colors.welcomeTextPrimary)
+                    .multilineTextAlignment(.center)
+                    .opacity(showDimensionGrid ? 1 : 0)
+                    .offset(y: showDimensionGrid ? 0 : 20)
+                    .animation(
+                        .easeOut(duration: 0.8).delay(0.2),
+                        value: showDimensionGrid
+                    )
                 
-                // Title and subtitle
-                VStack(spacing: 12) {
-                    Text("¿Qué áreas de tu bienestar\nquieres mejorar?")
-                        .font(.manrope(28, weight: .bold))
-                        .foregroundColor(theme.colors.welcomeTextPrimary)
-                        .multilineTextAlignment(.center)
-                        .opacity(showDimensionGrid ? 1 : 0)
-                        .offset(y: showDimensionGrid ? 0 : 20)
-                        .animation(
-                            .easeOut(duration: 0.8).delay(0.2),
-                            value: showDimensionGrid
-                        )
-                    
-                    Text("Selecciona 2 o 3 dimensiones.\nDesliza para explorar.")
-                        .font(.manrope(16, weight: .regular))
-                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .opacity(showDimensionGrid ? 1 : 0)
-                        .offset(y: showDimensionGrid ? 0 : 15)
-                        .animation(
-                            .easeOut(duration: 0.8).delay(0.4),
-                            value: showDimensionGrid
-                        )
-                }
+                Text("Selecciona 2 o 3 dimensiones.\nDesliza para explorar.")
+                    .font(.manrope(16, weight: .regular))
+                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .opacity(showDimensionGrid ? 1 : 0)
+                    .offset(y: showDimensionGrid ? 0 : 15)
+                    .animation(
+                        .easeOut(duration: 0.8).delay(0.4),
+                        value: showDimensionGrid
+                    )
             }
             .padding(.bottom, 30)
             
@@ -883,6 +843,31 @@ struct WelcomeScreen: View {
                         value: showDimensionGrid
                     )
             }
+        }
+    }
+    
+    private func startDimensionSelection() {
+        // Crossfade premium entre Explanation y Grid (0.4s como carousel)
+        // El Lottie permanece fijo durante la transición
+        withAnimation(.easeInOut(duration: 0.4)) {
+            showDimensionGrid = true
+        }
+    }
+    
+    private func showConfirmationView() {
+        withAnimation(.easeInOut(duration: 0.6)) {
+            showConfirmation = true
+        }
+    }
+    
+    // MARK: - Wave Animation Control
+    private func startWaveAnimation() {
+        let duration = isTransitioning ? 8.4 : 10.0 // Más lenta en estado inicial: 6.0 → 10.0
+        withAnimation(
+            .linear(duration: duration)
+            .repeatForever(autoreverses: false)
+        ) {
+            wavePhase = .pi * 2 // Un ciclo completo
         }
     }
     
