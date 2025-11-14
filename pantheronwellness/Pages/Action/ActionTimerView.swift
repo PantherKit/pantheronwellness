@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import Lottie
 
 struct ActionTimerView: View {
     @EnvironmentObject var coordinator: AppCoordinator
@@ -7,6 +8,8 @@ struct ActionTimerView: View {
     
     @State private var timeRemaining: Int = 120 // 2 minutos = 120 segundos
     @State private var isTimerRunning = false
+    @State private var hasStarted = false
+    @State private var isPressed = false
     @State private var checklistItems: [ChecklistItem] = []
     @State private var showContent = false
     @Environment(\.appTheme) var theme
@@ -19,31 +22,21 @@ struct ActionTimerView: View {
             dimension.primaryColor.opacity(0.05)
                 .ignoresSafeArea()
             
-            VStack(spacing: 32) {
+            VStack(spacing: 2) {
                 // Header
-                VStack(spacing: 12) {
-                    // Dimension Badge
-                    HStack(spacing: 8) {
-                        Image(systemName: dimension.iconName)
-                        Text(dimension.displayName)
-                            .fontWeight(.semibold)
-                    }
-                    .font(theme.typography.body1)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(dimension.primaryColor.opacity(0.15))
-                    )
-                    .foregroundColor(dimension.primaryColor)
-                    
+                VStack(spacing: 6) {
                     // Action Title
-                    Text(dimension.microAction)
-                        .font(theme.typography.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(theme.colors.onBackground)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(dimension.microAction)
+                            .font(theme.typography.title1)
+                            .fontWeight(.semibold)
+                            .foregroundColor(theme.colors.onBackground)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .padding(.horizontal, 24)
+                    .padding(.top, 12)
                 }
                 .opacity(showContent ? 1 : 0)
                 .offset(y: showContent ? 0 : -20)
@@ -53,6 +46,13 @@ struct ActionTimerView: View {
                 
                 // Timer Circle
                 ZStack {
+                    // Lottie Background - Capa de fondo
+                    LottieView(animation: .named("calmCircleAnimation"))
+                        .playing(loopMode: .loop)
+                        .animationSpeed(0.5)
+                        .frame(width: 280, height: 280)
+                        .opacity(0.1)
+                    
                     // Background Circle
                     Circle()
                         .stroke(dimension.primaryColor.opacity(0.2), lineWidth: 12)
@@ -116,7 +116,43 @@ struct ActionTimerView: View {
                 VStack(spacing: 12) {
                     if !isTimerRunning && timeRemaining > 0 {
                         Button(action: startTimer) {
-                            Text("Comenzar")
+                            HStack(spacing: 12) {
+                                Text(hasStarted ? "Reanudar" : "Comenzar")
+                                    .font(theme.typography.button)
+                                    .fontWeight(.semibold)
+                                
+                                Image(systemName: "arrow.right")
+                                    .font(.system(size: 16, weight: .bold))
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(dimension.primaryColor)
+                                    
+                                    // Overlay oscuro para dar más presencia
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .fill(Color.black.opacity(0.25))
+                                }
+                                .shadow(
+                                    color: Color.black.opacity(0.15),
+                                    radius: isPressed ? 4 : 12,
+                                    y: isPressed ? 2 : 6
+                                )
+                            )
+                            .scaleEffect(isPressed ? 0.97 : 1.0)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
+                            withAnimation(.easeInOut(duration: 0.15)) {
+                                isPressed = pressing
+                            }
+                        }, perform: {})
+                    } else if isTimerRunning {
+                        Button(action: pauseTimer) {
+                            Text("Pausar")
                                 .font(theme.typography.button)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.white)
@@ -124,22 +160,10 @@ struct ActionTimerView: View {
                                 .padding(.vertical, 16)
                                 .background(
                                     RoundedRectangle(cornerRadius: 16)
-                                        .fill(dimension.primaryColor)
+                                        .fill(dimension.primaryColor.opacity(0.7))
                                 )
                         }
-                    } else if isTimerRunning {
-                        Button(action: pauseTimer) {
-                            Text("Pausar")
-                                .font(theme.typography.button)
-                                .fontWeight(.semibold)
-                                .foregroundColor(dimension.primaryColor)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 16)
-                                        .fill(dimension.primaryColor.opacity(0.1))
-                                )
-                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                     
                     if allChecklistItemsCompleted && timeRemaining == 0 {
@@ -161,7 +185,7 @@ struct ActionTimerView: View {
                     Button(action: { coordinator.navigateToHome() }) {
                         Text("Cancelar")
                             .font(theme.typography.body2)
-                            .foregroundColor(theme.colors.onBackground.opacity(0.6))
+                            .foregroundColor(theme.colors.onBackground.opacity(0.8))
                     }
                 }
                 .padding(.horizontal, 20)
@@ -202,6 +226,7 @@ struct ActionTimerView: View {
     // MARK: - Actions
     private func startTimer() {
         isTimerRunning = true
+        hasStarted = true
     }
     
     private func pauseTimer() {
