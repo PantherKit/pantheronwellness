@@ -141,11 +141,27 @@ struct UserProfile: Codable {
     var identities: [WellnessDimension: Identity]
     var selectedWellnessFocus: [WellnessDimension]
     
+    // Gamification
+    var totalXP: Int
+    var currentStreak: Int
+    var longestStreak: Int
+    var lastActionDate: Date?
+    var dailyProgressHistory: [DailyProgress]
+    var todaysDimensionCompleted: [WellnessDimension]
+    var currentDailyChallenge: DailyChallenge?
+    
     init(name: String = "Usuario") {
         self.name = name
         self.startDate = Date()
         self.identities = [:]
         self.selectedWellnessFocus = []
+        self.totalXP = 0
+        self.currentStreak = 0
+        self.longestStreak = 0
+        self.lastActionDate = nil
+        self.dailyProgressHistory = []
+        self.todaysDimensionCompleted = []
+        self.currentDailyChallenge = nil
         
         // Inicializar todas las identidades
         for dimension in WellnessDimension.allCases {
@@ -167,13 +183,42 @@ struct UserProfile: Codable {
         })
         return uniqueDates.count
     }
+    
+    var currentLevel: UserLevel {
+        return UserLevel.level(for: totalXP)
+    }
+    
+    var progressToNextLevel: Double {
+        return currentLevel.progressToNext(currentXP: totalXP)
+    }
+    
+    var hasCompletedTodayAction: Bool {
+        guard let lastDate = lastActionDate else { return false }
+        return Calendar.current.isDateInToday(lastDate)
+    }
+    
+    var weeklyGoalProgress: Double {
+        let calendar = Calendar.current
+        let today = Date()
+        guard let weekStart = calendar.date(from: calendar.dateComponents([.yearForWeekOfYear, .weekOfYear], from: today)) else {
+            return 0
+        }
+        
+        let weekProgress = dailyProgressHistory.filter { progress in
+            progress.date >= weekStart && progress.date <= today
+        }
+        
+        return Double(weekProgress.count) / 7.0
+    }
 }
 
 enum AppView: Equatable {
     case welcome
     case onboarding
     case confirmation
-    case home
+    case mainTab
+    case actionTimer(WellnessDimension)
+    case feedbackCompletion(WellnessDimension, Int, Int) // dimension, xpEarned, newStreak
     case assessmentWelcome
     case assessmentQuestion(Int)
     case identitySelection
@@ -187,7 +232,7 @@ enum AppView: Equatable {
         case (.welcome, .welcome),
              (.onboarding, .onboarding),
              (.confirmation, .confirmation),
-             (.home, .home),
+             (.mainTab, .mainTab),
              (.assessmentWelcome, .assessmentWelcome),
              (.identitySelection, .identitySelection),
              (.dailyCheckIn, .dailyCheckIn),
@@ -195,6 +240,10 @@ enum AppView: Equatable {
             return true
         case (.assessmentQuestion(let lhsIndex), .assessmentQuestion(let rhsIndex)):
             return lhsIndex == rhsIndex
+        case (.actionTimer(let lhsDim), .actionTimer(let rhsDim)):
+            return lhsDim == rhsDim
+        case (.feedbackCompletion(let lhsDim, let lhsXP, let lhsStreak), .feedbackCompletion(let rhsDim, let rhsXP, let rhsStreak)):
+            return lhsDim == rhsDim && lhsXP == rhsXP && lhsStreak == rhsStreak
         case (.dailyAction(let lhsDim), .dailyAction(let rhsDim)):
             return lhsDim == rhsDim
         case (.feedback(let lhsDim), .feedback(let rhsDim)):

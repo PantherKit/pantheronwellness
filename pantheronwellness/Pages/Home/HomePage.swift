@@ -5,82 +5,103 @@ struct HomePage: View {
     @State private var showContent = false
     @Environment(\.appTheme) var theme
     
-    private var focusedDimensions: [WellnessDimension] {
-        coordinator.userProfile.selectedWellnessFocus
+    private var suggestedDimension: WellnessDimension? {
+        coordinator.getSuggestedDimensionForToday()
+    }
+    
+    private var hasCompletedToday: Bool {
+        coordinator.userProfile.hasCompletedTodayAction
+    }
+    
+    private var streak: Int {
+        coordinator.userProfile.currentStreak
+    }
+    
+    private var totalXP: Int {
+        coordinator.userProfile.totalXP
+    }
+    
+    private var currentLevel: UserLevel {
+        coordinator.userProfile.currentLevel
+    }
+    
+    private var weeklyProgress: Double {
+        coordinator.userProfile.weeklyGoalProgress
     }
     
     var body: some View {
-        ZStack {
-            // Background
-            theme.colors.background
-                .ignoresSafeArea()
-            
-            VStack(spacing: 32) {
-                Spacer()
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 24) {
+                // Header
+                HomeHeader(
+                    userName: coordinator.userProfile.name,
+                    streak: streak,
+                    dayNumber: coordinator.userProfile.activeDaysCount + 1
+                )
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
                 
-                // Placeholder Icon
-                Image(systemName: "sparkles")
-                    .font(.system(size: 64, weight: .light))
-                    .foregroundColor(theme.colors.primary)
-                    .opacity(showContent ? 1 : 0)
-                    .scaleEffect(showContent ? 1 : 0.5)
-                    .animation(.spring(response: 0.8, dampingFraction: 0.6), value: showContent)
-                
-                // Message
-                VStack(spacing: 16) {
-                    Text("Tu Wellness Journey")
-                        .font(theme.typography.headline)
-                        .foregroundColor(theme.colors.onBackground)
-                        .opacity(showContent ? 1 : 0)
-                        .offset(y: showContent ? 0 : 20)
-                        .animation(.easeOut(duration: 0.6).delay(0.2), value: showContent)
-                    
-                    if !focusedDimensions.isEmpty {
-                        VStack(spacing: 8) {
-                            Text("Estás enfocado en:")
-                                .font(theme.typography.body2)
-                                .foregroundColor(theme.colors.onBackground.opacity(0.6))
-                            
-                            HStack(spacing: 8) {
-                                ForEach(focusedDimensions.prefix(3), id: \.self) { dimension in
-                                    HStack(spacing: 6) {
-                                        Image(systemName: dimension.iconName)
-                                            .font(.system(size: 14, weight: .medium))
-                                        Text(dimension.displayName)
-                                            .font(theme.typography.caption)
-                                    }
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 12)
-                                            .fill(dimension.primaryColor.opacity(0.1))
-                                    )
-                                    .foregroundColor(dimension.primaryColor)
-                                }
+                // Hero Card - Main Action
+                if let dimension = suggestedDimension {
+                    if hasCompletedToday {
+                        CompletedHeroCard(
+                            dimension: dimension,
+                            onViewProgress: {
+                                // Navigate to progress tab
+                            },
+                            onDoMore: {
+                                // Start another action
                             }
-                        }
-                        .opacity(showContent ? 1 : 0)
-                        .offset(y: showContent ? 0 : 20)
-                        .animation(.easeOut(duration: 0.6).delay(0.4), value: showContent)
+                        )
+                        .padding(.horizontal, 20)
+                    } else {
+                        ActionHeroCard(
+                            dimension: dimension,
+                            onStart: {
+                                coordinator.navigateToActionTimer(dimension: dimension)
+                            }
+                        )
+                        .padding(.horizontal, 20)
                     }
-                    
-                    Text("Pronto añadiremos más funcionalidades increíbles")
-                        .font(theme.typography.body2)
-                        .foregroundColor(theme.colors.onBackground.opacity(0.5))
-                        .multilineTextAlignment(.center)
-                        .opacity(showContent ? 1 : 0)
-                        .offset(y: showContent ? 0 : 20)
-                        .animation(.easeOut(duration: 0.6).delay(0.6), value: showContent)
                 }
-                .padding(.horizontal, 32)
                 
-                Spacer()
+                // Stats Row
+                StatsRow(
+                    streak: streak,
+                    weeklyGoal: weeklyProgress,
+                    totalXP: totalXP,
+                    level: currentLevel
+                )
+                .padding(.horizontal, 20)
+                
+                // Journey Progress
+                JourneyProgressSection(
+                    focusedDimensions: coordinator.userProfile.selectedWellnessFocus,
+                    identities: coordinator.userProfile.identities
+                )
+                .padding(.horizontal, 20)
+                
+                // Daily Challenge
+                if let challenge = coordinator.userProfile.currentDailyChallenge {
+                    DailyChallengeCard(challenge: challenge)
+                        .padding(.horizontal, 20)
+                }
+                
+                Spacer(minLength: 100)
             }
+            .padding(.vertical, 16)
         }
+        .background(theme.colors.background.ignoresSafeArea())
         .onAppear {
+            coordinator.resetDailyState()
             showContent = true
         }
     }
+}
+
+#Preview {
+    HomePage()
+        .environmentObject(AppCoordinator())
 }
 
 #Preview {

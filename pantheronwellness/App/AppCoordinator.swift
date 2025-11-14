@@ -47,7 +47,25 @@ class AppCoordinator: ObservableObject {
     
     func navigateToHome() {
         withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
-            currentView = .home
+            currentView = .mainTab
+        }
+    }
+    
+    func navigateToMainTab() {
+        withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
+            currentView = .mainTab
+        }
+    }
+    
+    func navigateToActionTimer(dimension: WellnessDimension) {
+        withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
+            currentView = .actionTimer(dimension)
+        }
+    }
+    
+    func navigateToFeedbackCompletion(dimension: WellnessDimension, xpEarned: Int, newStreak: Int) {
+        withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
+            currentView = .feedbackCompletion(dimension, xpEarned, newStreak)
         }
     }
     
@@ -72,8 +90,157 @@ class AppCoordinator: ObservableObject {
     
     func completeFocusSelection() {
         userProfile.selectedWellnessFocus = Array(selectedFocusDimensions)
+        
+        // Generate first daily challenge
+        userProfile.currentDailyChallenge = DailyChallenge.generateDailyChallenge()
+        
         saveUserProfile()
         navigateToConfirmation()
+    }
+    
+    // MARK: - Daily Dimension Selection
+    func getSuggestedDimensionForToday() -> WellnessDimension? {
+        // Si no tiene dimensiones seleccionadas, retornar nil
+        guard !userProfile.selectedWellnessFocus.isEmpty else { return nil }
+        
+        // Filtrar las que ya completó hoy
+        let availableDimensions = userProfile.selectedWellnessFocus.filter { dimension in
+            !userProfile.todaysDimensionCompleted.contains(dimension)
+        }
+        
+        // Si ya completó todas, retornar cualquiera para bonus
+        guard !availableDimensions.isEmpty else {
+            return userProfile.selectedWellnessFocus.first
+        }
+        
+        // Sugerir la que tenga menos evidencias recientes
+        let sortedByEvidence = availableDimensions.sorted { dim1, dim2 in
+            let evidence1 = userProfile.identities[dim1]?.evidenceCount ?? 0
+            let evidence2 = userProfile.identities[dim2]?.evidenceCount ?? 0
+            return evidence1 < evidence2
+        }
+        
+        return sortedByEvidence.first
+    }
+    
+    // MARK: - Action Completion & XP System
+    func completeAction(for dimension: WellnessDimension) {
+        let isSecondAction = userProfile.hasCompletedTodayAction
+        var xpEarned = XPReward.dailyActionComplete.rawValue
+        
+        // Update streak
+        updateStreak()
+        
+        // Bonus XP for second action same day
+        if isSecondAction {
+            xpEarned += XPReward.secondDimensionSameDay.rawValue
+        }
+        
+        // Streak bonuses
+        if userProfile.currentStreak == 5 {
+            xpEarned += XPReward.streakBonus5Days.rawValue
+        } else if userProfile.currentStreak == 7 {
+            xpEarned += XPReward.streakBonus7Days.rawValue
+        } else if userProfile.currentStreak == 14 {
+            xpEarned += XPReward.streakBonus14Days.rawValue
+        }
+        
+        // Check daily challenge
+        if let challenge = userProfile.currentDailyChallenge, !challenge.isCompleted {
+            if checkDailyChallengeCompletion(challenge: challenge, dimension: dimension) {
+                xpEarned += challenge.xpReward
+                userProfile.currentDailyChallenge?.isCompleted = true
+            }
+        }
+        
+        // Update totals
+        userProfile.totalXP += xpEarned
+        userProfile.lastActionDate = Date()
+        
+        // Add to history
+        let progress = DailyProgress(
+            dimensionCompleted: dimension,
+            xpEarned: xpEarned,
+            streakAtCompletion: userProfile.currentStreak,
+            isSecondActionOfDay: isSecondAction
+        )
+        userProfile.dailyProgressHistory.append(progress)
+        
+        // Mark as completed today
+        if !userProfile.todaysDimensionCompleted.contains(dimension) {
+            userProfile.todaysDimensionCompleted.append(dimension)
+        }
+        
+        // Update identity evidence
+        if userProfile.identities[dimension] == nil {
+            userProfile.identities[dimension] = Identity(dimension: dimension)
+        }
+        userProfile.identities[dimension]?.addEvidence()
+        
+        saveUserProfile()
+        
+        // Navigate to feedback
+        navigateToFeedbackCompletion(
+            dimension: dimension,
+            xpEarned: xpEarned,
+            newStreak: userProfile.currentStreak
+        )
+    }
+    
+    private func updateStreak() {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        guard let lastDate = userProfile.lastActionDate else {
+            userProfile.currentStreak = 1
+            return
+        }
+        
+        let lastActionDay = calendar.startOfDay(for: lastDate)
+        let daysDifference = calendar.dateComponents([.day], from: lastActionDay, to: today).day ?? 0
+        
+        if daysDifference == 0 {
+            // Ya completó hoy, no cambiar streak
+            return
+        } else if daysDifference == 1 {
+            // Día consecutivo
+            userProfile.currentStreak += 1
+            if userProfile.currentStreak > userProfile.longestStreak {
+                userProfile.longestStreak = userProfile.currentStreak
+            }
+        } else {
+            // Rompió streak
+            userProfile.currentStreak = 1
+        }
+    }
+    
+    private func checkDailyChallengeCompletion(challenge: DailyChallenge, dimension: WellnessDimension) -> Bool {
+        switch challenge.type {
+        case .completeBefore8PM:
+            let hour = Calendar.current.component(.hour, from: Date())
+            return hour < 20
+        case .completeTwoDimensions:
+            return userProfile.todaysDimensionCompleted.count >= 2
+        case .maintainStreak:
+            return userProfile.currentStreak > 0
+        }
+    }
+    
+    func resetDailyState() {
+        // Check if needs to generate new challenge
+        if let challenge = userProfile.currentDailyChallenge {
+            if !Calendar.current.isDateInToday(challenge.date) {
+                userProfile.currentDailyChallenge = DailyChallenge.generateDailyChallenge()
+            }
+        } else {
+            userProfile.currentDailyChallenge = DailyChallenge.generateDailyChallenge()
+        }
+        
+        // Reset today's completed dimensions if new day
+        if !userProfile.hasCompletedTodayAction && !userProfile.todaysDimensionCompleted.isEmpty {
+            userProfile.todaysDimensionCompleted = []
+            saveUserProfile()
+        }
     }
     
     func navigateToDailyCheckIn() {
@@ -157,7 +324,7 @@ class AppCoordinator: ObservableObject {
         
         // Navigate immediately and generate journey in background
         withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
-            currentView = .home
+            currentView = .mainTab
         }
         
         // Generate journey in background (non-blocking)
@@ -189,7 +356,7 @@ class AppCoordinator: ObservableObject {
         saveTodayCheckIn()
     }
     
-    private func completeAction(for dimension: WellnessDimension) {
+    private func completeTodayCheckIn(for dimension: WellnessDimension) {
         guard let currentCheckIn = todayCheckIn else { return }
         
         todayCheckIn = DailyCheckIn(

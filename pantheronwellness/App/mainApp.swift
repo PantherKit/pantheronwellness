@@ -46,6 +46,37 @@ struct MainRouterView: View {
                         removal: .move(edge: .leading).combined(with: .opacity)
                     ))
                 
+            case .mainTab:
+                MainTabView()
+                    .environmentObject(coordinator)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .move(edge: .top).combined(with: .opacity)
+                    ))
+                
+            case .actionTimer(let dimension):
+                ActionTimerView(dimension: dimension)
+                    .environmentObject(coordinator)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .trailing).combined(with: .opacity),
+                        removal: .move(edge: .leading).combined(with: .opacity)
+                    ))
+                
+            case .feedbackCompletion(let dimension, let xpEarned, let newStreak):
+                FeedbackCompletionView(
+                    dimension: dimension,
+                    xpEarned: xpEarned,
+                    newStreak: newStreak,
+                    onContinue: {
+                        coordinator.navigateToMainTab()
+                    }
+                )
+                .environmentObject(coordinator)
+                .transition(.asymmetric(
+                    insertion: .scale.combined(with: .opacity),
+                    removal: .move(edge: .bottom).combined(with: .opacity)
+                ))
+                
             case .assessmentWelcome:
                 AssessmentWelcomePage(coordinator: coordinator)
                     .transition(.asymmetric(
@@ -58,13 +89,6 @@ struct MainRouterView: View {
                     .transition(.asymmetric(
                         insertion: .move(edge: .trailing).combined(with: .opacity),
                         removal: .move(edge: .leading).combined(with: .opacity)
-                    ))
-                
-            case .home:
-                HomePage()
-                    .transition(.asymmetric(
-                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                        removal: .move(edge: .top).combined(with: .opacity)
                     ))
                 
             // Mantener otras vistas para no romper el sistema existente
