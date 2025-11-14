@@ -14,7 +14,7 @@ struct StatsRowCompact: View {
                 iconColor: .orange,
                 value: "\(streak)",
                 label: streak == 1 ? "día" : "días",
-                backgroundColor: Color.orange.opacity(0.1)
+                backgroundImage: "RedBG"
             )
             
             // XP
@@ -23,7 +23,7 @@ struct StatsRowCompact: View {
                 iconColor: .yellow,
                 value: "\(totalXP)",
                 label: "XP",
-                backgroundColor: Color.yellow.opacity(0.1)
+                backgroundImage: "YellowBG"
             )
             
             // Week Progress
@@ -32,7 +32,7 @@ struct StatsRowCompact: View {
                 iconColor: Color(hex: 0x34C759),
                 value: "\(weekProgress)/7",
                 label: "semana",
-                backgroundColor: Color(hex: 0x34C759).opacity(0.1)
+                backgroundImage: "GreenBG"
             )
         }
     }
@@ -43,7 +43,7 @@ struct CompactStatCard: View {
     let iconColor: Color
     let value: String
     let label: String
-    let backgroundColor: Color
+    let backgroundImage: String
     @Environment(\.appTheme) var theme
     
     var body: some View {
@@ -63,9 +63,25 @@ struct CompactStatCard: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(backgroundColor)
+            ZStack {
+                // Background image
+                Image(backgroundImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                
+                // Fade out overlay
+                LinearGradient(
+                    colors: [
+                        Color.clear,
+                        Color.white.opacity(0.55),
+                        Color.white.opacity(0.95)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
         )
+        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 }
 
