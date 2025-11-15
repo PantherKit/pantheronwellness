@@ -558,7 +558,7 @@ struct WelcomeScreen: View {
                 .font(.manrope(24, weight: .bold))
                 .foregroundColor(theme.colors.welcomeTextPrimary)
                 .multilineTextAlignment(.center)
-                .lineSpacing(2)
+                .lineSpacing(3)
             
             // Timeline vertical con animación escalonada
             VStack(spacing: 0) {
@@ -856,6 +856,7 @@ struct WelcomeScreen: View {
     
     private func showConfirmationView() {
         withAnimation(.easeInOut(duration: 0.6)) {
+            showExplanation = true  // Necesario para pasar la condición !showExplanation
             showConfirmation = true
         }
     }
