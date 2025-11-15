@@ -26,6 +26,7 @@ struct WelcomeScreen: View {
     @State private var scrollOffset: CGFloat = 0
     @State private var showNameInput = false
     @State private var userName: String = ""
+    @State private var centeredDimension: WellnessDimension? = nil  // Track dimension centrada para haptic scroll
     @Namespace private var animationNamespace
     @Environment(\.appTheme) var theme
     
@@ -903,6 +904,19 @@ struct WelcomeScreen: View {
                             let yOffset = abs(distance / screenWidth) * 40  // Curvatura pronunciada
                             let opacity = max(0.5, 1.0 - abs(distance / screenWidth) * 0.5)  // Mejor visibilidad lateral
                             
+                            // HAPTIC AL SCROLL: Detectar card centrada
+                            let isClosestToCenter = abs(distance) < 50  // Threshold de 50pt para considerar "centrada"
+                            let _ = {  // Ejecutar side effect sin warning
+                                if isClosestToCenter && centeredDimension != dimension {
+                                    DispatchQueue.main.async {
+                                        centeredDimension = dimension
+                                        // Haptic sutil tipo "selection" - patrón de Apple
+                                        let selectionFeedback = UISelectionFeedbackGenerator()
+                                        selectionFeedback.selectionChanged()
+                                    }
+                                }
+                            }()
+                            
                             IdentityCard(
                                 dimension: dimension,
                                 identity: nil,
@@ -975,105 +989,95 @@ struct WelcomeScreen: View {
         }
     }
     
-    // MARK: - Confirmation Section
+    // MARK: - Confirmation Section (Lottie Fijo)
     private func confirmationSection(geometry: GeometryProxy) -> some View {
-        VStack(spacing: 32) {
-            // Success Icon
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            gradient: Gradient(colors: [
-                                Color(hex: 0xB6E2D3).opacity(0.3),
-                                Color(hex: 0x1A5A53).opacity(0.1)
-                            ]),
-                            center: .center,
-                            startRadius: 30,
-                            endRadius: 60
+        VStack(spacing: 0) {
+            // LOTTIE FIJO (calmCircleAnimation - Continuidad Visual)
+            LottieView(animation: .named("calmCircleAnimation"))
+                .playing(loopMode: .loop)
+                .animationSpeed(0.6)
+                .frame(width: 140, height: 140)
+                .scaleEffect(showConfirmation ? 1 : 0.5)
+                .animation(
+                    .spring(response: 1.0, dampingFraction: 0.6),
+                    value: showConfirmation
+                )
+            
+            Spacer().frame(height: 20)
+            
+            // CONTENIDO DINÁMICO
+            VStack(spacing: 32) {
+                // Title
+                VStack(spacing: 16) {
+                    Text("Perfecto, vamos a\nenfocarnos en:")
+                        .font(.manrope(28, weight: .bold))
+                        .foregroundColor(theme.colors.welcomeTextPrimary)
+                        .multilineTextAlignment(.center)
+                        .opacity(showConfirmation ? 1 : 0)
+                        .offset(y: showConfirmation ? 0 : 20)
+                        .animation(
+                            .easeOut(duration: 0.6).delay(0.3),
+                            value: showConfirmation
                         )
-                    )
-                    .frame(width: 100, height: 100)
-                
-                Image(systemName: "checkmark")
-                    .font(.system(size: 40, weight: .semibold))
-                    .foregroundColor(Color(hex: 0x1A5A53))
-            }
-            .scaleEffect(showConfirmation ? 1 : 0.5)
-            .animation(
-                .spring(response: 0.8, dampingFraction: 0.6),
-                value: showConfirmation
-            )
-            
-            // Title
-            VStack(spacing: 16) {
-                Text("Perfecto, vamos a\nenfocarnos en:")
-                    .font(.manrope(28, weight: .bold))
-                    .foregroundColor(theme.colors.welcomeTextPrimary)
-                    .multilineTextAlignment(.center)
-                    .opacity(showConfirmation ? 1 : 0)
-                    .offset(y: showConfirmation ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.6).delay(0.3),
-                        value: showConfirmation
-                    )
-                
-                // Dimension Chips
-                VStack(spacing: 12) {
-                    ForEach(Array(coordinator.selectedFocusDimensions.enumerated()), id: \.element) { index, dimension in
-                        DimensionChip(dimension: dimension)
-                            .opacity(showConfirmation ? 1 : 0)
-                            .offset(x: showConfirmation ? 0 : -30)
-                            .animation(
-                                .easeOut(duration: 0.5).delay(0.5 + Double(index) * 0.1),
-                                value: showConfirmation
-                            )
+                    
+                    // Dimension Chips
+                    VStack(spacing: 12) {
+                        ForEach(Array(coordinator.selectedFocusDimensions.enumerated()), id: \.element) { index, dimension in
+                            DimensionChip(dimension: dimension)
+                                .opacity(showConfirmation ? 1 : 0)
+                                .offset(x: showConfirmation ? 0 : -30)
+                                .animation(
+                                    .easeOut(duration: 0.5).delay(0.5 + Double(index) * 0.1),
+                                    value: showConfirmation
+                                )
+                        }
                     }
+                    .padding(.vertical, 8)
+                    
+                    Text("Tu journey personalizado está listo")
+                        .font(.manrope(16, weight: .regular))
+                        .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
+                        .multilineTextAlignment(.center)
+                        .opacity(showConfirmation ? 1 : 0)
+                        .offset(y: showConfirmation ? 0 : 20)
+                        .animation(
+                            .easeOut(duration: 0.6).delay(0.8),
+                            value: showConfirmation
+                        )
                 }
-                .padding(.vertical, 8)
                 
-                Text("Tu journey personalizado está listo")
-                    .font(.manrope(16, weight: .regular))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
-                    .multilineTextAlignment(.center)
-                    .opacity(showConfirmation ? 1 : 0)
-                    .offset(y: showConfirmation ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.6).delay(0.8),
-                        value: showConfirmation
-                    )
+                Spacer(minLength: 20)
+                
+                // CTA Button
+                Button(action: {
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                    impactFeedback.impactOccurred()
+                    coordinator.completeFocusSelection()
+                }) {
+                    Text("Comenzar mi viaje")
+                        .font(.manrope(16, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 16)
+                        .background(
+                            Capsule()
+                                .fill(theme.colors.welcomeTextPrimary)
+                                .shadow(
+                                    color: theme.colors.welcomeTextPrimary.opacity(0.3),
+                                    radius: 16,
+                                    y: 6
+                                )
+                        )
+                }
+                .buttonStyle(PlainButtonStyle())
+                .frame(width: geometry.size.width * 0.65)
+                .opacity(showConfirmation ? 1 : 0)
+                .offset(y: showConfirmation ? 0 : 30)
+                .animation(
+                    .spring(response: 0.7, dampingFraction: 0.75).delay(1.0),
+                    value: showConfirmation
+                )
             }
-            
-            Spacer(minLength: 20)
-            
-            // CTA Button
-            Button(action: {
-                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                impactFeedback.impactOccurred()
-                coordinator.completeFocusSelection()
-            }) {
-                Text("Comenzar mi viaje")
-                    .font(.manrope(16, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 32)
-                    .padding(.vertical, 16)
-                    .background(
-                        Capsule()
-                            .fill(theme.colors.welcomeTextPrimary)
-                            .shadow(
-                                color: theme.colors.welcomeTextPrimary.opacity(0.3),
-                                radius: 16,
-                                y: 6
-                            )
-                    )
-            }
-            .buttonStyle(PlainButtonStyle())
-            .frame(width: geometry.size.width * 0.65)
-            .opacity(showConfirmation ? 1 : 0)
-            .offset(y: showConfirmation ? 0 : 30)
-            .animation(
-                .spring(response: 0.7, dampingFraction: 0.75).delay(1.0),
-                value: showConfirmation
-            )
         }
     }
     
