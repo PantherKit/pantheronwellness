@@ -908,12 +908,29 @@ struct WelcomeScreen: View {
                                 isSelected: coordinator.selectedFocusDimensions.contains(dimension),
                                 namespace: animationNamespace,
                                 onTap: {
-                                    // Scroll to center + toggle selection
+                                    // 1. HAPTIC INMEDIATO al tocar (feedback táctil rápido)
+                                    let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                                    impactFeedback.impactOccurred()
+                                    
+                                    // 2. Scroll to center
                                     withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                                         proxy.scrollTo(dimension, anchor: .center)
                                     }
                                     
+                                    // 3. Toggle selection con HAPTIC DIFERENCIADO
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                                        let isCurrentlySelected = coordinator.selectedFocusDimensions.contains(dimension)
+                                        
+                                        if isCurrentlySelected {
+                                            // Deseleccionar: haptic suave
+                                            let softFeedback = UIImpactFeedbackGenerator(style: .soft)
+                                            softFeedback.impactOccurred()
+                                        } else {
+                                            // Seleccionar: haptic medio (más fuerte, positivo)
+                                            let mediumFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                            mediumFeedback.impactOccurred()
+                                        }
+                                        
                                         coordinator.toggleFocusDimension(dimension)
                                     }
                                 },
