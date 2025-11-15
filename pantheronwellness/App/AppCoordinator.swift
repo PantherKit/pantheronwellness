@@ -28,8 +28,27 @@ class AppCoordinator: ObservableObject {
     init() {
         loadUserProfile()
         loadTodayCheckIn()
-        // Siempre empezar en welcome para flujo simple
-        currentView = .welcome
+        
+        // Verificar si el usuario ya completó el onboarding
+        if hasCompletedOnboarding() {
+            // Usuario ya registrado, ir directo al Home
+            currentView = .mainTab
+            
+            // Reset diario si es necesario
+            resetDailyState()
+        } else {
+            // Primera vez o después de logout
+            currentView = .welcome
+        }
+    }
+    
+    // MARK: - Onboarding Check
+    private func hasCompletedOnboarding() -> Bool {
+        // Usuario completó onboarding si:
+        // 1. Tiene nombre (no vacío)
+        // 2. Tiene al menos 2 dimensiones seleccionadas
+        return !userProfile.name.isEmpty && 
+               userProfile.selectedWellnessFocus.count >= minFocusDimensions
     }
     
     // MARK: - Navigation
@@ -66,6 +85,35 @@ class AppCoordinator: ObservableObject {
     func navigateToFeedbackCompletion(dimension: WellnessDimension, xpEarned: Int, newStreak: Int) {
         withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
             currentView = .feedbackCompletion(dimension, xpEarned, newStreak)
+        }
+    }
+    
+    func navigateToDimensionExplorer() {
+        withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
+            currentView = .dimensionExplorer
+        }
+    }
+    
+    // MARK: - Logout
+    func logout() {
+        // 1. Limpiar persistencia
+        userDefaults.removeObject(forKey: profileKey)
+        userDefaults.removeObject(forKey: checkInKey)
+        userDefaults.removeObject(forKey: assessmentKey)
+        
+        // 2. Reset state completo
+        userProfile = UserProfile()
+        selectedFocusDimensions = []
+        todayCheckIn = nil
+        currentAssessment = nil
+        assessmentResponses = [:]
+        currentQuestionIndex = 0
+        selectedDimension = nil
+        selectedSleepQuality = .good
+        
+        // 3. Navegar a welcome con animación
+        withAnimation(.timingCurve(0.4, 0.0, 0.2, 1, duration: 0.35)) {
+            currentView = .welcome
         }
     }
     
@@ -227,19 +275,34 @@ class AppCoordinator: ObservableObject {
     }
     
     func resetDailyState() {
-        // Check if needs to generate new challenge
-        if let challenge = userProfile.currentDailyChallenge {
-            if !Calendar.current.isDateInToday(challenge.date) {
-                userProfile.currentDailyChallenge = DailyChallenge.generateDailyChallenge()
-            }
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        // Check if we're in a new day based on lastActionDate
+        var isNewDay = false
+        if let lastAction = userProfile.lastActionDate {
+            let lastActionDay = calendar.startOfDay(for: lastAction)
+            isNewDay = lastActionDay != today
         } else {
-            userProfile.currentDailyChallenge = DailyChallenge.generateDailyChallenge()
+            isNewDay = true
         }
         
-        // Reset today's completed dimensions if new day
-        if !userProfile.hasCompletedTodayAction && !userProfile.todaysDimensionCompleted.isEmpty {
+        // If it's a new day, reset daily states
+        if isNewDay {
             userProfile.todaysDimensionCompleted = []
+            userProfile.currentDailyChallenge = DailyChallenge.generateDailyChallenge()
             saveUserProfile()
+        } else {
+            // Check if needs to generate new challenge
+            if let challenge = userProfile.currentDailyChallenge {
+                if !calendar.isDateInToday(challenge.date) {
+                    userProfile.currentDailyChallenge = DailyChallenge.generateDailyChallenge()
+                    saveUserProfile()
+                }
+            } else {
+                userProfile.currentDailyChallenge = DailyChallenge.generateDailyChallenge()
+                saveUserProfile()
+            }
         }
     }
     

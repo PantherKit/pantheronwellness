@@ -177,6 +177,12 @@ struct UserProfile: Codable {
         identities.max(by: { $0.value.evidenceCount < $1.value.evidenceCount })?.key
     }
     
+    var totalActiveDays: Int {
+        // Contar días únicos en el historial
+        let uniqueDates = Set(dailyProgressHistory.map { Calendar.current.startOfDay(for: $0.date) })
+        return uniqueDates.count
+    }
+    
     var activeDaysCount: Int {
         let uniqueDates = Set(identities.values.compactMap { $0.lastEvidenceDate }.map {
             Calendar.current.startOfDay(for: $0)
@@ -219,6 +225,7 @@ enum AppView: Equatable {
     case mainTab
     case actionTimer(WellnessDimension)
     case feedbackCompletion(WellnessDimension, Int, Int) // dimension, xpEarned, newStreak
+    case dimensionExplorer // ✨ NEW: Explorer para seleccionar otras dimensiones
     case assessmentWelcome
     case assessmentQuestion(Int)
     case identitySelection
@@ -233,6 +240,7 @@ enum AppView: Equatable {
              (.onboarding, .onboarding),
              (.confirmation, .confirmation),
              (.mainTab, .mainTab),
+             (.dimensionExplorer, .dimensionExplorer),
              (.assessmentWelcome, .assessmentWelcome),
              (.identitySelection, .identitySelection),
              (.dailyCheckIn, .dailyCheckIn),

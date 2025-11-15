@@ -34,10 +34,11 @@ struct MainTabView: View {
                 HomePage()
                     .tag(Tab.home)
                 
-                ProgressView(coordinator: coordinator)
+                JourneyView(coordinator: coordinator)
                     .tag(Tab.progress)
                 
-                ProfilePlaceholderView()
+                ProfileView()
+                    .environmentObject(coordinator)
                     .tag(Tab.profile)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
