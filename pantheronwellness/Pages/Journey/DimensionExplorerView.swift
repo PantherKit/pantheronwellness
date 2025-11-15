@@ -63,20 +63,21 @@ struct DimensionExplorerView: View {
                 
                 // Content
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 32) {
+                    VStack(alignment: .leading, spacing: 32) {
                         // Title Section
-                        VStack(spacing: 16) {
-                            Text("🌟 Explora Tu Bienestar")
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Explora Tu Bienestar")
                                 .font(.manrope(32, weight: .bold))
                                 .foregroundColor(theme.colors.onBackground)
                             
                             Text("Elige otra dimensión para hoy\ny gana +15 XP bonus")
                                 .font(.manrope(16, weight: .regular))
                                 .foregroundColor(theme.colors.onBackground.opacity(0.6))
-                                .multilineTextAlignment(.center)
+                                .multilineTextAlignment(.leading)
                                 .lineSpacing(4)
                         }
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 20)
                         .opacity(showContent ? 1 : 0)
                         .offset(y: showContent ? 0 : 20)
                         .animation(.easeOut(duration: 0.6).delay(0.2), value: showContent)
@@ -143,7 +144,9 @@ struct DimensionExplorerView: View {
                         Text("Toca cualquier dimensión para comenzar")
                             .font(.manrope(14, weight: .regular))
                             .foregroundColor(theme.colors.onBackground.opacity(0.5))
-                            .multilineTextAlignment(.center)
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 20)
                             .padding(.top, 8)
                             .opacity(showContent ? 1 : 0)
                             .animation(.easeOut(duration: 0.6).delay(0.8), value: showContent)

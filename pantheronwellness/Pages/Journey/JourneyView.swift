@@ -32,9 +32,9 @@ struct JourneyView: View {
     
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 32) {
+            VStack(alignment: .leading, spacing: 32) {
                 // Header
-                VStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 16) {
                     Text("Tu Journey")
                         .font(.manrope(32, weight: .bold))
                         .foregroundColor(theme.colors.onBackground)
@@ -68,6 +68,7 @@ struct JourneyView: View {
                     .opacity(showContent ? 1 : 0)
                     .animation(.easeOut(duration: 0.6).delay(0.2), value: showContent)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
                 
@@ -97,6 +98,20 @@ struct JourneyView: View {
                 .opacity(showContent ? 1 : 0)
                 .animation(.easeOut(duration: 0.6).delay(0.3), value: showContent)
                 
+                // CTA - Estado dependiente (movido aquí, justo después de Dimensiones Activas)
+                CTAButton(
+                    hasCompletedToday: hasCompletedToday,
+                    action: {
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                        impactFeedback.impactOccurred()
+                        coordinator.navigateToDimensionExplorer()
+                    }
+                )
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 20)
+                .opacity(showContent ? 1 : 0)
+                .animation(.easeOut(duration: 0.6).delay(0.4), value: showContent)
+                
                 // Micro-Celebración
                 if hasCompletedToday, let lastDimension = profile.todaysDimensionCompleted.last {
                     MicroCelebrationCard(dimension: lastDimension)
@@ -114,19 +129,6 @@ struct JourneyView: View {
                 .padding(.horizontal, 20)
                 .opacity(showContent ? 1 : 0)
                 .animation(.easeOut(duration: 0.6).delay(0.6), value: showContent)
-                
-                // CTA - Estado dependiente
-                CTAButton(
-                    hasCompletedToday: hasCompletedToday,
-                    action: {
-                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                        impactFeedback.impactOccurred()
-                        coordinator.navigateToDimensionExplorer()
-                    }
-                )
-                .padding(.horizontal, 20)
-                .opacity(showContent ? 1 : 0)
-                .animation(.easeOut(duration: 0.6).delay(0.7), value: showContent)
                 
                 Spacer(minLength: 80)
             }
@@ -369,7 +371,7 @@ private struct CTAButton: View {
                         .foregroundColor(.white.opacity(0.9))
                 }
             }
-            .frame(maxWidth: .infinity)
+            .padding(.horizontal, hasCompletedToday ? 28 : 32)
             .padding(.vertical, hasCompletedToday ? 16 : 18)
             .background(
                 Capsule()
