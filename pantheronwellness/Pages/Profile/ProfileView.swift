@@ -57,7 +57,7 @@ struct ProfileView: View {
                         .opacity(showContent ? 1 : 0)
                         .animation(.easeOut(duration: 0.5).delay(0.3), value: showContent)
                 }
-                .padding(.top, 60)
+                .padding(.top, 70)
                 
                 // Stats Grid 2x2
                 VStack(alignment: .leading, spacing: 16) {
@@ -196,6 +196,7 @@ struct ProfileView: View {
             }
             .padding(.vertical, 16)
         }
+        .ignoresSafeArea(.container, edges: .top)
         .background(Color.white.ignoresSafeArea())
         .alert("¿Cerrar sesión?", isPresented: $showLogoutAlert) {
             Button("Cancelar", role: .cancel) {

@@ -46,9 +46,9 @@ struct MainTabView: View {
             // Custom Tab Bar
             CustomTabBar(selectedTab: $selectedTab)
                 .padding(.horizontal, 20)
-                .padding(.bottom, 20)
+                .padding(.bottom, 30)
         }
-        .ignoresSafeArea(.keyboard)
+        .ignoresSafeArea()
     }
 }
 

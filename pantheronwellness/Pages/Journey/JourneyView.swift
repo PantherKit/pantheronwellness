@@ -70,7 +70,7 @@ struct JourneyView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 20)
-                .padding(.top, 20)
+                .padding(.top, 50)
                 
                 // Dimensiones Activas
                 VStack(alignment: .leading, spacing: 16) {
@@ -134,6 +134,7 @@ struct JourneyView: View {
             }
             .padding(.vertical, 16)
         }
+        .ignoresSafeArea(.container, edges: .top)
         .background(Color.white.ignoresSafeArea())
         .onAppear {
             showContent = true

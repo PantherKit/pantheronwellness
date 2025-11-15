@@ -38,7 +38,7 @@ struct HomePage: View {
                     notificationCount: 0
                 )
                 .padding(.horizontal, 20)
-                .padding(.top, 8)
+                .padding(.top, 50)
                 .opacity(showContent ? 1 : 0)
                 .animation(.easeOut(duration: 0.6), value: showContent)
                 
@@ -101,6 +101,7 @@ struct HomePage: View {
             }
             .padding(.vertical, 16)
         }
+        .ignoresSafeArea(.container, edges: .top)
         .background(Color.white.ignoresSafeArea())
         .onAppear {
             coordinator.resetDailyState()

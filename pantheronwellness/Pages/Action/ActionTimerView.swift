@@ -36,7 +36,7 @@ struct ActionTimerView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     .padding(.horizontal, 24)
-                    .padding(.top, 12)
+                    .padding(.top, 50)
                 }
                 .opacity(showContent ? 1 : 0)
                 .offset(y: showContent ? 0 : -20)

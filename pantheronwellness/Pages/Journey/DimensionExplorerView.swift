@@ -57,7 +57,7 @@ struct DimensionExplorerView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.top, 50)
                 .opacity(showContent ? 1 : 0)
                 .animation(.easeOut(duration: 0.4), value: showContent)
                 
