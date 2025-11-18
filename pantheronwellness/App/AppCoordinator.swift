@@ -45,10 +45,8 @@ class AppCoordinator: ObservableObject {
     // MARK: - Onboarding Check
     private func hasCompletedOnboarding() -> Bool {
         // Usuario completó onboarding si:
-        // 1. Tiene nombre (no vacío)
-        // 2. Tiene al menos 2 dimensiones seleccionadas
-        return !userProfile.name.isEmpty && 
-               userProfile.selectedWellnessFocus.count >= minFocusDimensions
+        // Tiene al menos 2 dimensiones seleccionadas (nombre es opcional)
+        return userProfile.selectedWellnessFocus.count >= minFocusDimensions
     }
     
     // MARK: - Navigation

@@ -15,6 +15,16 @@ struct HomePage: View {
         }
     }
     
+    private var mainGreeting: String {
+        let hour = Calendar.current.component(.hour, from: Date())
+        switch hour {
+        case 5...11: return "Buenos días ☀️"
+        case 12...18: return "Buenas tardes"
+        case 19...22: return "Buenas noches 🌙"
+        default: return "Hola"
+        }
+    }
+    
     private var suggestedDimension: WellnessDimension? {
         coordinator.getSuggestedDimensionForToday()
     }
@@ -44,7 +54,9 @@ struct HomePage: View {
                 
                 // Greeting
                 HStack {
-                    Text("Hola, \(coordinator.userProfile.name)")
+                    Text(coordinator.userProfile.name.isEmpty 
+                         ? mainGreeting 
+                         : "Hola, \(coordinator.userProfile.name)")
                         .font(.manrope(28, weight: .bold))
                         .foregroundColor(theme.colors.onBackground)
                     Spacer()

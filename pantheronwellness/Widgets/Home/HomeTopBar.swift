@@ -23,9 +23,15 @@ struct HomeTopBar: View {
                     )
                     .frame(width: 48, height: 48)
                 
-                Text(userName.prefix(1).uppercased())
-                    .font(.manrope(20, weight: .bold))
-                    .foregroundColor(.white)
+                if userName.isEmpty {
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundColor(.white)
+                } else {
+                    Text(userName.prefix(1).uppercased())
+                        .font(.manrope(20, weight: .bold))
+                        .foregroundColor(.white)
+                }
             }
             
             // Greeting

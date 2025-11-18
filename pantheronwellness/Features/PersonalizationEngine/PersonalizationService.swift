@@ -208,9 +208,10 @@ class PersonalizationService: ObservableObject {
     
     private func createMorningNudge(user: UserProfile) -> MotivationalNudge? {
         let dominantDimension = user.dominantIdentity ?? .physical
+        let greeting = user.name.isEmpty ? "Buenos días" : "Buenos días, \(user.name)"
         
         return MotivationalNudge(
-            message: "Buenos días, \(user.name). ¿Listo para ser alguien que \(dominantDimension.identityStatement.lowercased())?",
+            message: "\(greeting). ¿Listo para ser alguien que \(dominantDimension.identityStatement.lowercased())?",
             actionSuggestion: "Una micro-acción de \(dominantDimension.displayName.lowercased()) te tomará solo 1 minuto.",
             urgency: .low,
             type: .encouragement
@@ -222,8 +223,12 @@ class PersonalizationService: ObservableObject {
         let hasCompletedToday = checkIfCompletedToday(user: user)
         
         if hasCompletedToday {
+            let message = user.name.isEmpty 
+                ? "Excelente trabajo hoy. Tu identidad se está fortaleciendo."
+                : "Excelente trabajo hoy, \(user.name). Tu identidad se está fortaleciendo."
+            
             return MotivationalNudge(
-                message: "Excelente trabajo hoy, \(user.name). Tu identidad se está fortaleciendo.",
+                message: message,
                 actionSuggestion: "Toma un momento para reconocer tu progreso.",
                 urgency: .none,
                 type: .celebration

@@ -27,6 +27,7 @@ struct WelcomeScreen: View {
     @State private var showNameInput = false
     @State private var userName: String = ""
     @State private var centeredDimension: WellnessDimension? = nil  // Track dimension centrada para haptic scroll
+    @FocusState private var isNameFieldFocused: Bool
     @Namespace private var animationNamespace
     @Environment(\.appTheme) var theme
     
@@ -303,8 +304,8 @@ struct WelcomeScreen: View {
     }
     
     private func continueToExplanation() {
-        // Guardar nombre en UserProfile
-        coordinator.userProfile.name = userName.isEmpty ? "Usuario" : userName
+        // Guardar nombre en UserProfile (vacío si no se proporcionó)
+        coordinator.userProfile.name = userName
         coordinator.saveUserProfile()
         
         // Cambiar velocidad de olas y desactivar Lottie
@@ -325,129 +326,180 @@ struct WelcomeScreen: View {
     
     // MARK: - Name Input Section
     private func nameInputSection(geometry: GeometryProxy) -> some View {
-        VStack(spacing: 0) {  // Control total del spacing
-            // Lottie Icon - Sunrise Animation
-            LottieView(animation: .named("sunriseAnimation"))
-                .playing(loopMode: .loop)
-                .animationSpeed(0.8)
-                .frame(width: 340, height: 250)
-                .scaleEffect(showOnboardingContent ? 1 : 0.5)
-                .animation(
-                    .spring(response: 1.0, dampingFraction: 0.6),
-                    value: showOnboardingContent
-                )
-            
-            Spacer().frame(height: 12)  // Entre Lottie y texto
-            
-            // Title and description (grupo cohesivo)
-            VStack(spacing: 12) {  // Más íntimo: 18 → 12
-                Text("¿Cómo te gustaría que te llamemos?")
-                    .font(.manrope(32, weight: .bold))
-                    .foregroundColor(theme.colors.welcomeTextPrimary)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(nil)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .opacity(showOnboardingContent ? 1 : 0)
-                    .offset(y: showOnboardingContent ? 0 : 20)
-                    .animation(
-                        .easeOut(duration: 0.8).delay(0.2),
-                        value: showOnboardingContent
-                    )
-                
-                Text("Tu journey personal comienza aquí.\nBasado en las 7 dimensiones del wellness.")
-                    .font(.manrope(16, weight: .regular))
-                    .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-                    .opacity(showOnboardingContent ? 1 : 0)
-                    .offset(y: showOnboardingContent ? 0 : 15)
-                    .animation(
-                        .easeOut(duration: 0.8).delay(0.4),
-                        value: showOnboardingContent
-                    )
-            }
-            
-            Spacer().frame(height: 24)  // Separación clara del input
-            
-            // TextField Minimalista
-            VStack(spacing: 8) {
-                TextField("Me gusta que me digan...", text: $userName)
-                    .font(.manrope(20, weight: .regular))
-                    .foregroundColor(theme.colors.welcomeTextPrimary)
-                    .multilineTextAlignment(.center)
-                    .padding(.vertical, 8)
-                
-                // Línea inferior minimalista
-                Rectangle()
-                    .fill(theme.colors.welcomeTextPrimary.opacity(0.3))
-                    .frame(height: 1)
-                    .frame(maxWidth: 200)
-            }
-            .opacity(showOnboardingContent ? 1 : 0)
-            .offset(y: showOnboardingContent ? 0 : 20)
-            .animation(
-                .easeOut(duration: 0.8).delay(0.6),
-                value: showOnboardingContent
-            )
-            
-            Spacer().frame(height: 44)  // Compacto pero elegante
-            
-            // Buttons (grupo de acciones)
-            VStack(spacing: 244) {
-                // Continue Button
-                Button(action: {
-                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
-                    impactFeedback.impactOccurred()
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 0) {  // Control total del spacing
+                // Ajuste dinámico cuando aparece el teclado
+                if isNameFieldFocused {
+                    Spacer().frame(height: 20)  // Espacio reducido cuando hay teclado
+                } else {
+                    // Lottie Icon - Sunrise Animation (solo cuando no hay teclado)
+                    LottieView(animation: .named("sunriseAnimation"))
+                        .playing(loopMode: .loop)
+                        .animationSpeed(0.8)
+                        .frame(width: 340, height: 250)
+                        .scaleEffect(showOnboardingContent ? 1 : 0.5)
+                        .scaleEffect(isNameFieldFocused ? 0.9 : 1.0) // Scale adicional cuando hay foco
+                        .opacity(isNameFieldFocused ? 0 : 1)
+                        .animation(
+                            .spring(response: 1.0, dampingFraction: 0.6),
+                            value: showOnboardingContent
+                        )
+                        .animation(
+                            .spring(response: 0.6, dampingFraction: 0.8),
+                            value: isNameFieldFocused
+                        )
                     
-                    // Dismiss keyboard
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                    Spacer().frame(height: 12)  // Entre Lottie y texto
+                }
+                
+                // Title and description (grupo cohesivo)
+                VStack(spacing: 12) {  // Más íntimo: 18 → 12
+                    Text("¿Cómo te gustaría que te llamemos?")
+                        .font(.manrope(isNameFieldFocused ? 24 : 32, weight: .bold))
+                        .foregroundColor(theme.colors.welcomeTextPrimary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .opacity(showOnboardingContent ? 1 : 0)
+                        .offset(y: showOnboardingContent ? 0 : 20)
+                        .offset(y: isNameFieldFocused ? -8 : 0)  // Sube cuando hay teclado
+                        .animation(
+                            .easeOut(duration: 0.8).delay(0.2),
+                            value: showOnboardingContent
+                        )
+                        .animation(
+                            .timingCurve(0.4, 0.0, 0.2, 1, duration: 0.5),
+                            value: isNameFieldFocused
+                        )
                     
-                    continueToExplanation()
-                }) {
-                    Text("Continuar")
-                        .font(.manrope(16, weight: .semibold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 32)
-                        .padding(.vertical, 16)
-                        .background(
-                            Capsule()
-                                .fill(theme.colors.welcomeTextPrimary)
-                                .shadow(
-                                    color: theme.colors.welcomeTextPrimary.opacity(0.3),
-                                    radius: 16,
-                                    y: 6
-                                )
+                    if !isNameFieldFocused {
+                        Text("Tu journey personal comienza aquí.\nBasado en las 7 dimensiones del wellness.")
+                            .font(.manrope(16, weight: .regular))
+                            .foregroundColor(theme.colors.welcomeTextPrimary.opacity(0.6))
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(4)
+                            .opacity(showOnboardingContent ? 1 : 0)
+                            .offset(y: showOnboardingContent ? 0 : 15)
+                            .animation(
+                                .easeOut(duration: 0.8).delay(0.4),
+                                value: showOnboardingContent
+                            )
+                            .transition(.asymmetric(
+                                insertion: .opacity.combined(with: .offset(y: 10)),
+                                removal: .opacity.combined(with: .offset(y: -10))
+                            ))
+                    }
+                }
+                
+                Spacer().frame(height: isNameFieldFocused ? 20 : 24)  // Separación clara del input
+                
+                // TextField Minimalista
+                VStack(spacing: 8) {
+                    TextField("Me gusta que me digan...", text: $userName)
+                        .font(.manrope(20, weight: .regular))
+                        .foregroundColor(theme.colors.welcomeTextPrimary)
+                        .multilineTextAlignment(.center)
+                        .padding(.vertical, 8)
+                        .focused($isNameFieldFocused)
+                        .submitLabel(.done)
+                        .onSubmit {
+                            isNameFieldFocused = false
+                        }
+                    
+                    // Línea inferior minimalista con animación premium
+                    Rectangle()
+                        .fill(theme.colors.welcomeTextPrimary.opacity(isNameFieldFocused ? 0.6 : 0.3))
+                        .frame(height: isNameFieldFocused ? 2 : 1)
+                        .frame(maxWidth: 200)
+                        .scaleEffect(x: isNameFieldFocused ? 1 : 0.8, y: 1)  // Scale horizontal premium
+                        .animation(
+                            .spring(response: 0.5, dampingFraction: 0.8),
+                            value: isNameFieldFocused
                         )
                 }
-                .buttonStyle(PlainButtonStyle())
-                .frame(width: geometry.size.width * 0.65)
                 .opacity(showOnboardingContent ? 1 : 0)
-                .scaleEffect(showOnboardingContent ? 1.0 : 0.9)
+                .offset(y: showOnboardingContent ? 0 : 20)
+                .offset(y: isNameFieldFocused ? -5 : 0)  // Sube ligeramente cuando hay foco
                 .animation(
-                    .spring(response: 0.7, dampingFraction: 0.75).delay(0.8),
+                    .easeOut(duration: 0.6),  // Sin delay para responsividad inmediata
                     value: showOnboardingContent
+                )
+                .animation(
+                    .timingCurve(0.4, 0.0, 0.2, 1, duration: 0.5),
+                    value: isNameFieldFocused
                 )
                 
-                // Skip text
-                Button(action: {
-                    let impactFeedback = UIImpactFeedbackGenerator(style: .light)
-                    impactFeedback.impactOccurred()
+                Spacer().frame(height: isNameFieldFocused ? 32 : 44)  // Compacto pero elegante
+                
+                // Buttons (grupo de acciones)
+                VStack(spacing: 16) {
+                    // Continue Button
+                    Button(action: {
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                        impactFeedback.impactOccurred()
+                        
+                        // Dismiss keyboard
+                        isNameFieldFocused = false
+                        
+                        continueToExplanation()
+                    }) {
+                        Text("Continuar")
+                            .font(.manrope(16, weight: .semibold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 32)
+                            .padding(.vertical, 16)
+                            .background(
+                                Capsule()
+                                    .fill(theme.colors.welcomeTextPrimary)
+                                    .shadow(
+                                        color: theme.colors.welcomeTextPrimary.opacity(0.3),
+                                        radius: 16,
+                                        y: 6
+                                    )
+                            )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .frame(width: geometry.size.width * 0.65)
+                    .opacity(showOnboardingContent ? 1 : 0)
+                    .scaleEffect(showOnboardingContent ? 1.0 : 0.9)
+                    .offset(y: showOnboardingContent ? 0 : 20)
+                    .animation(
+                        .timingCurve(0.4, 0.0, 0.2, 1, duration: 0.6).delay(0.8),
+                        value: showOnboardingContent
+                    )
                     
-                    // Dismiss keyboard
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                    
-                    continueToExplanation()
-                }) {
-                    Text("Prefiero no decirlo")
-                        .font(.manrope(14, weight: .regular))
-                        .foregroundColor(theme.colors.welcomeTextMuted.opacity(0.7))
+                    // Skip text
+                    Button(action: {
+                        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                        impactFeedback.impactOccurred()
+                        
+                        // Dismiss keyboard
+                        isNameFieldFocused = false
+                        
+                        continueToExplanation()
+                    }) {
+                        Text("Prefiero no decirlo")
+                            .font(.manrope(14, weight: .regular))
+                            .foregroundColor(theme.colors.welcomeTextMuted.opacity(0.7))
+                    }
+                    .opacity(showOnboardingContent ? 1 : 0)
+                    .offset(y: showOnboardingContent ? 0 : 10)
+                    .animation(
+                        .timingCurve(0.4, 0.0, 0.2, 1, duration: 0.6).delay(1.0),
+                        value: showOnboardingContent
+                    )
                 }
-                .opacity(showOnboardingContent ? 1 : 0)
-                .animation(
-                    .easeOut(duration: 0.6).delay(1.0),
-                    value: showOnboardingContent
-                )
+                
+                // Padding adicional para el teclado
+                if isNameFieldFocused {
+                    Spacer().frame(height: 20)
+                }
             }
+        }
+        .ignoresSafeArea(.keyboard, edges: .bottom)  // Permite que el ScrollView funcione naturalmente con el teclado
+        .onTapGesture {
+            // Dismiss keyboard al tocar fuera
+            isNameFieldFocused = false
         }
     }
     
